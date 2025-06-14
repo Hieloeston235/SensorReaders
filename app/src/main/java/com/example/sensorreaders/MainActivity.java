@@ -60,6 +60,8 @@ import java.util.Random;
          Random random = new Random();
          MyDataBase = FirebaseDatabase.getInstance().getReference();
          AgregarSensor(new Sensor(sensoresN.get(random.nextInt(sensoresN.size())), sensoresV.get(random.nextInt(sensoresV.size())), sensoresH.get(random.nextInt(sensoresH.size()))));
+
+         //Los infieles se quejan del trabajo de los fieles
      }
 
      private boolean loadFragment(Fragment fragment) {
