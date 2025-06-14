@@ -1,5 +1,7 @@
  package com.example.sensorreaders;
 
+import static android.content.ContentValues.TAG;
+
 import android.os.Bundle;
 import android.util.Log;
 
@@ -29,6 +31,7 @@ import java.util.Random;
  public class MainActivity extends AppCompatActivity {
 
      private BottomNavigationView bottomNavigationView;
+     private DatabaseReference MyDataBase;
 
      @Override
      protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,14 @@ import java.util.Random;
 
              return loadFragment(selectedFragment);
          });
+
+         //para probar sensores
+         List<String> sensoresN = Arrays.asList("Aire", "Agua","Tierra","Fuego");
+         List<String> sensoresH = Arrays.asList("Ayer", "Hoy", "Mañana", "La semana pasada");
+         List<Double> sensoresV = Arrays.asList(24.99, 67.99, 123.456, 7.89);
+         Random random = new Random();
+         MyDataBase = FirebaseDatabase.getInstance().getReference();
+         AgregarSensor(new Sensor(sensoresN.get(random.nextInt(sensoresN.size())), sensoresV.get(random.nextInt(sensoresV.size())), sensoresH.get(random.nextInt(sensoresH.size()))));
      }
 
      private boolean loadFragment(Fragment fragment) {
@@ -60,5 +71,14 @@ import java.util.Random;
              return true;
          }
          return false;
+     }
+     //funcion para agregar sensores (sirve de prueba borrar al entregar)
+     private void AgregarSensor(Sensor sensor){
+         MyDataBase.child("sensores")
+                 .push()
+                 .setValue(sensor)
+                 .addOnFailureListener(e -> {
+                     Log.e(TAG,"Error añadir sensores" + e.getMessage());
+                 });
      }
  }

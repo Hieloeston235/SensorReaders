@@ -1,4 +1,5 @@
 package com.example.sensorreaders;
+//modificar clases con sensores pertinente
 public class Sensor {
     private String nombre;
     private Double valor;
