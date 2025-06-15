@@ -23,10 +23,10 @@ import java.util.List;
 
 public class SensorFragment extends Fragment {
 
-    private List<Sensor> listaSensores = new ArrayList<>();
-    private DatabaseReference MyDataBase;
-    private RecyclerView recyclerView;
-    private SensorAdapter adapter;
+
+    
+
+
 
     public SensorFragment() {
         // Constructor vacío obligatorio
@@ -38,33 +38,11 @@ public class SensorFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_sensor, container, false);
 
 
-        MyDataBase = FirebaseDatabase.getInstance().getReference();
-        cargarSensores();
+
+
 
         return view;
     }
 
-    private void cargarSensores() {
-        MyDataBase.child("sensores").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listaSensores.clear();
-                for (DataSnapshot sensoresData : snapshot.getChildren()) {
-                    String nombre = sensoresData.child("nombre").getValue(String.class);
-                    String hora = sensoresData.child("hora").getValue(String.class);
-                    Double valor = sensoresData.child("valor").getValue(Double.class);
 
-                    if (nombre != null && hora != null && valor != null) {
-                        //listaSensores.add(new Sensor(nombre, valor, hora));
-                    }
-                }
-                adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "Error al obtener sensores", error.toException());
-            }
-        });
-    }
 }

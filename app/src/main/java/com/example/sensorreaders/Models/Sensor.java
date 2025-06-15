@@ -23,30 +23,41 @@ public class Sensor {
     @ColumnInfo
     private Double lluvia;
     @ColumnInfo
+    private Double luz;
+    @ColumnInfo
     private Double presionAtmosferica;
     @ColumnInfo
     private Double temperatura;
     @ColumnInfo
     private Double viento;
-    @ColumnInfo(name = "firebase_key")
+    @Ignore
     private String firebaseKey;
 
-    @ColumnInfo(name = "is_local_only")
+    @Ignore
     private boolean isLocalOnly;
 
     @Ignore
     public Sensor() {
     }
 
-    public Sensor(Double gas, Double humedad, Double humedadSuelo, Double humo, Double lluvia, Double presionAtmosferica, Double temperatura, Double viento) {
+    public Sensor(Double gas, Double humedad, Double humedadSuelo, Double humo, Double lluvia, Double luz, Double presionAtmosferica, Double temperatura, Double viento) {
         this.gas = gas;
         this.humedad = humedad;
         this.humedadSuelo = humedadSuelo;
         this.humo = humo;
         this.lluvia = lluvia;
+        this.luz = luz;
         this.presionAtmosferica = presionAtmosferica;
         this.temperatura = temperatura;
         this.viento = viento;
+    }
+
+    public Double getLuz() {
+        return this.luz;
+    }
+
+    public void setLuz(Double luz) {
+        this.luz = luz;
     }
 
     public boolean isLocalOnly() {

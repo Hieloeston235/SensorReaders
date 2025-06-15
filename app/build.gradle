@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.sensorreaders"
-        minSdk 25
+        minSdk 27
         targetSdk 35
         versionCode 1
         versionName "1.0"
@@ -84,5 +84,7 @@ dependencies {
 
     implementation 'com.itextpdf:itextg:5.5.10'
     implementation 'com.google.firebase:firebase-firestore:23.0.0' // o la versión más reciente
+
+    implementation 'org.apache.poi:poi-ooxml:5.2.3' // Para hojas XLSX
 
 }

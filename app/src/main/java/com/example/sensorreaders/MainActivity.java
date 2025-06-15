@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 
+import com.example.sensorreaders.Database.database;
 import com.example.sensorreaders.Models.Sensor;
 import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private DatabaseReference MyDataBase;
     private SessionManager sessionManager;
+    private PDFGenerator pdfGenerator;
 
 
     @Override
@@ -44,12 +46,12 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        loadFragment(new HistorialFragment());
+        loadFragment(new SensorFragment());
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             if (item.getItemId() == R.id.nav_clima_actual) {
-                //selectedFragment = new SensorFragment();
+                selectedFragment = new SensorFragment();
             } else if (item.getItemId() == R.id.nav_historial) {
                 selectedFragment = new HistorialFragment();
             } else if (item.getItemId() == R.id.nav_ajustes) {
@@ -60,15 +62,17 @@ public class MainActivity extends AppCompatActivity {
             return loadFragment(selectedFragment);
         });
 
+
+        //Ejemplo de como crear pdf y excel a partir de livedata de un bd local
         SensorViewModel viewModel = new SensorViewModel(MainActivity.this.getApplication());
         LiveData<List<Sensor>> sensorData = viewModel.getSensorList();
 
-            // 2. Crea el PDF
-         PDFGenerator pdfGenerator = new PDFGenerator(this);
-         pdfGenerator.generateFromLiveData(sensorData, "reporte_sensores_" + System.currentTimeMillis(),this);
+        // 2. Crea el PDF y EXCEL
+        pdfGenerator = new PDFGenerator(MainActivity.this);
+        pdfGenerator.generateBothFromLiveData(sensorData, "reporte_sensores_" + System.currentTimeMillis(),MainActivity.this);
 
 
-         //Los infieles se quejan del trabajo de los fieles
+        //Los infieles se quejan del trabajo de los fieles
     }
 
     @Override
@@ -111,15 +115,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    //funcion para agregar sensores (sirve de prueba borrar al entregar)
-    private void AgregarSensor(Sensor sensor){
-        MyDataBase.child("sensores")
-                .push()
-                .setValue(sensor)
-                .addOnFailureListener(e -> {
-                    Log.e(TAG,"Error añadir sensores" + e.getMessage());
-                });
-    }
 
     /**
      * Método público para cerrar sesión (llamado desde AjustesFragment)
