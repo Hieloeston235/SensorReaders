@@ -7,6 +7,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -20,6 +21,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -64,8 +68,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Ejemplo de como crear pdf y excel a partir de livedata de un bd local
-        SensorViewModel viewModel = new SensorViewModel(MainActivity.this.getApplication());
-        LiveData<List<Sensor>> sensorData = viewModel.getSensorList();
+        new Thread(() -> {
+            boolean reachable = isServerReachable("100.66.204.124", 8000);
+            runOnUiThread(() -> {
+                if (reachable) {
+                    Toast.makeText(this, "Servidor disponible", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Servidor NO disponible", Toast.LENGTH_SHORT).show();
+                }
+            });
+            Log.d("ConexionTest", "Servidor reachable? " + reachable);
+        }).start();
+
+
 
         // 2. Crea el PDF y EXCEL
         //pdfGenerator = new PDFGenerator(MainActivity.this);
@@ -85,6 +100,15 @@ public class MainActivity extends AppCompatActivity {
             sessionManager.updateLastActivity();
         }
     }
+    public boolean isServerReachable(String ip, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(ip, port), 3000);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
 
     @Override
     protected void onPause() {

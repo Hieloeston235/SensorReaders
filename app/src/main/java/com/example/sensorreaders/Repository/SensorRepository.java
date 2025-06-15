@@ -8,12 +8,17 @@ import androidx.lifecycle.LiveData;
 
 import com.example.sensorreaders.DAO.SensoresDao;
 import com.example.sensorreaders.Database.database;
+import com.example.sensorreaders.Interface.SensorApiService;
 import com.example.sensorreaders.Models.Sensor;
+import com.example.sensorreaders.SensorDeserializer;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.internal.GsonBuildConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,21 +29,65 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.Nullable;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class SensorRepository {
     private SensoresDao sensoresDao;
     private LiveData<List<Sensor>> list;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private DatabaseReference firebaseRef;
+    private SensorApiService apiService;
 
     public SensorRepository(@Nullable Application application){
         database db = database.getInstance(application);
         sensoresDao = db.sensoresDao();
         list = sensoresDao.getallSensors();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Sensor.class, new SensorDeserializer())
+                .create();
 
-        firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://100.66.204.124:8000/api/sensores/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+        apiService = retrofit.create(SensorApiService.class);
+        syncWithApi();
+        //firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
 
-        starFirebaseSync();
+        //starFirebaseSync();
     }
+    private void syncWithApi() {
+        apiService.getSensores().enqueue(new Callback<List<Sensor>>() {
+            @Override
+            public void onResponse(Call<List<Sensor>> call, Response<List<Sensor>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    executorService.execute(() -> {
+                        List<Sensor> apiSensors = response.body();
+                        for (Sensor sensor : apiSensors) {
+                            // Si quieres guardar la fecha actual como inserción
+                            //sensor.setFecha(System.currentTimeMillis());
+                            sensoresDao.insert(sensor);
+                        }
+                    });
+                } else {
+                    Log.e("API", "Respuesta fallida: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Sensor>> call, Throwable t) {
+                Log.e("API", "Error al llamar a la API: " + t.getMessage());
+            }
+        });
+    }
+    public void refreshFromApi() {
+        syncWithApi();
+    }
+
 
     private void starFirebaseSync() {
         firebaseRef.addValueEventListener(new ValueEventListener() {

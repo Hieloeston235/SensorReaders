@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import com.example.sensorreaders.DAO.SensoresDao;
 import com.example.sensorreaders.Models.Sensor;
 
-@Database(entities = {Sensor.class}, version = 7)
+@Database(entities = {Sensor.class}, version = 8)
 public abstract class  database extends RoomDatabase {
     public abstract SensoresDao sensoresDao();
 

@@ -35,7 +35,7 @@ public class Sensor {
 
     @Ignore
     private boolean isLocalOnly;
-    @ColumnInfo(name = "fechaInserccion")
+    @ColumnInfo
     private long fecha;
     @Ignore
     public Sensor() {
@@ -52,6 +52,10 @@ public class Sensor {
         this.temperatura = temperatura;
         this.viento = viento;
         this.fecha = fecha;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public long getFecha() {
