@@ -8,6 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sensorreaders.Models.Sensor;
+
 import java.util.List;
 
 public class SensorAdapter extends RecyclerView.Adapter<SensorAdapter.SensorViewHolder> {

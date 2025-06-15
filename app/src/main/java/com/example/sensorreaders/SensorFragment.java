@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sensorreaders.Models.Sensor;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,7 +59,7 @@ public class SensorFragment extends Fragment {
                     Double valor = sensoresData.child("valor").getValue(Double.class);
 
                     if (nombre != null && hora != null && valor != null) {
-                        listaSensores.add(new Sensor(nombre, valor, hora));
+                        //listaSensores.add(new Sensor(nombre, valor, hora));
                     }
                 }
                 adapter.notifyDataSetChanged();
