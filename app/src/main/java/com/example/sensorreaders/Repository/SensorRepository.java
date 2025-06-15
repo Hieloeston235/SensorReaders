@@ -86,20 +86,13 @@ public class SensorRepository {
                 sensoresDao.update(firebaseSensor);
             } else {
                 // Insertar nuevo sensor
+                firebaseSensor.setFecha(System.currentTimeMillis()); // Asignar la fecha actual
                 sensoresDao.insert(firebaseSensor);
+
             }
         }
 
-        /* Se arregla al ponerle un parametro timestamp al modelo y darles su gets and settes
-        for (Sensor firebaseSensor : firebaseSensors) {
-            Sensor localSensor = localSensorsMap.get(firebaseSensor.getFirebaseKey());
-            if (localSensor != null) {
-                // Comparar timestamps y quedarse con el más reciente
-                if (firebaseSensor.getTimestamp() > localSensor.getTimestamp()) {
-                    sensoresDao.update(firebaseSensor);
-                }
-            }
-        }*/
+
     }
     public LiveData<List<Sensor>> getList(){
         return list;

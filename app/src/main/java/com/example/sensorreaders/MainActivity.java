@@ -68,8 +68,8 @@ public class MainActivity extends AppCompatActivity {
         LiveData<List<Sensor>> sensorData = viewModel.getSensorList();
 
         // 2. Crea el PDF y EXCEL
-        pdfGenerator = new PDFGenerator(MainActivity.this);
-        pdfGenerator.generateBothFromLiveData(sensorData, "reporte_sensores_" + System.currentTimeMillis(),MainActivity.this);
+        //pdfGenerator = new PDFGenerator(MainActivity.this);
+        //pdfGenerator.generateBothFromLiveData(sensorData, "reporte_sensores_" + System.currentTimeMillis(),MainActivity.this);
 
 
         //Los infieles se quejan del trabajo de los fieles

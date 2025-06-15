@@ -35,12 +35,13 @@ public class Sensor {
 
     @Ignore
     private boolean isLocalOnly;
-
+    @ColumnInfo(name = "fechaInserccion")
+    private long fecha;
     @Ignore
     public Sensor() {
     }
 
-    public Sensor(Double gas, Double humedad, Double humedadSuelo, Double humo, Double lluvia, Double luz, Double presionAtmosferica, Double temperatura, Double viento) {
+    public Sensor(Double gas, Double humedad, Double humedadSuelo, Double humo, Double lluvia, Double luz, Double presionAtmosferica, Double temperatura, Double viento, long fecha) {
         this.gas = gas;
         this.humedad = humedad;
         this.humedadSuelo = humedadSuelo;
@@ -50,6 +51,15 @@ public class Sensor {
         this.presionAtmosferica = presionAtmosferica;
         this.temperatura = temperatura;
         this.viento = viento;
+        this.fecha = fecha;
+    }
+
+    public long getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(long fecha) {
+        this.fecha = fecha;
     }
 
     public Double getLuz() {

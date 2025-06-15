@@ -104,8 +104,8 @@ public class PDFGenerator {
     }
 
     private void addSensorDataTable(Document document, List<Sensor> sensorList) throws DocumentException {
-        PdfPTable table = new PdfPTable(10);
-        float[] columnWidths = {5f, 8f, 8f, 10f, 8f, 8f, 8f, 12f, 10f, 8f};
+        PdfPTable table = new PdfPTable(11);
+        float[] columnWidths = {5f, 8f, 8f, 10f, 8f, 8f, 8f, 12f, 10f, 8f, 12f};
         table.setWidths(columnWidths);
         table.setWidthPercentage(100);
 
@@ -120,7 +120,7 @@ public class PDFGenerator {
     private void addTableHeader(PdfPTable table) {
         String[] headers = {
                 "ID", "Gas", "Humedad", "Humedad Suelo", "Humo",
-                "Lluvia","Luz" ,"Presión Atmosf.", "Temperatura", "Viento"
+                "Lluvia","Luz" ,"Presión Atmosf.", "Temperatura", "Viento", "Fecha/Hora"
         };
 
         for (String header : headers) {
@@ -156,7 +156,8 @@ public class PDFGenerator {
         table.addCell(interpretarPresion(sensor.getPresionAtmosferica()));
         table.addCell(formatDouble(sensor.getTemperatura()));
         table.addCell(interpretarViento(sensor.getViento()));
-        // table.addCell(sensor.getFecha() != null ? dateFormat.format(sensor.getFecha()) : "N/A");
+        table.addCell(sensor.getFecha() > 0 ? dateFormat.format(new Date(sensor.getFecha())) : "N/A");
+
     }
     private String interpretarHumedad(Double valor) {
         if (valor == null) return "N/A";
@@ -229,7 +230,7 @@ public class PDFGenerator {
             Row headerRow = sheet.createRow(0);
             String[] headers = {
                     "ID", "Gas", "Humedad", "Humedad Suelo", "Humo",
-                    "Lluvia", "Luz", "Presión Atmosférica", "Temperatura", "Viento"
+                    "Lluvia", "Luz", "Presión Atmosférica", "Temperatura", "Viento", "Fecha/Hora"
             };
 
             for (int i = 0; i < headers.length; i++) {
@@ -239,6 +240,7 @@ public class PDFGenerator {
 
             // Llenar datos
             for (int i = 0; i < sensorList.size(); i++) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                 Sensor sensor = sensorList.get(i);
                 Row row = sheet.createRow(i + 1);
 
@@ -252,6 +254,9 @@ public class PDFGenerator {
                 row.createCell(7).setCellValue(getSafeDouble(sensor.getPresionAtmosferica()));
                 row.createCell(8).setCellValue(getSafeDouble(sensor.getTemperatura()));
                 row.createCell(9).setCellValue(getSafeDouble(sensor.getViento()));
+                row.createCell(10).setCellValue(
+                        sensor.getFecha() > 0 ? dateFormat.format(new Date(sensor.getFecha())) : "N/A"
+                );
             }
 
 
