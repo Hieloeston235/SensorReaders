@@ -1,8 +1,15 @@
 package com.example.sensorreaders;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 
 import com.example.sensorreaders.Models.Sensor;
 import com.itextpdf.text.Document;
@@ -37,16 +44,32 @@ public class PDFGenerator {
      * @return true si se generó correctamente, false si hubo error
      */
     public boolean generateSensorReport(List<Sensor> sensorList, String fileName) {
-        // Crear directorio si no existe
-        File dir = new File(Environment.getExternalStorageDirectory() + PDF_DIRECTORY);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        // Verificar permisos primero (para Android 6.0+)
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(context, "Se necesitan permisos de almacenamiento", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // Crear directorio usando File(File parent, String child) para mejor compatibilidad
+        File dir = new File(Environment.getExternalStorageDirectory(), PDF_DIRECTORY);
+
+        // Verificar y crear directorio con verificación de éxito
+        if (!dir.exists() && !dir.mkdirs()) {
+            Toast.makeText(context, "No se pudo crear el directorio", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // Verificar si el directorio es realmente un directorio y se puede escribir
+        if (!dir.isDirectory() || !dir.canWrite()) {
+            Toast.makeText(context, "Problemas con el directorio de destino", Toast.LENGTH_SHORT).show();
+            return false;
         }
 
         // Crear archivo PDF
         File file = new File(dir, fileName + ".pdf");
-        try {
-            FileOutputStream outputStream = new FileOutputStream(file);
+
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
             Document document = new Document();
             PdfWriter.getInstance(document, outputStream);
 
@@ -56,16 +79,33 @@ public class PDFGenerator {
             addSensorDataTable(document, sensorList);
             document.close();
 
-            outputStream.close();
-
             Toast.makeText(context, "PDF generado en: " + file.getPath(), Toast.LENGTH_LONG).show();
             return true;
 
         } catch (IOException | DocumentException e) {
             e.printStackTrace();
-            Toast.makeText(context, "Error al generar PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            String errorMsg = "Error al generar PDF: " + e.getMessage();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                errorMsg += "\nEn Android 10+, usa el almacenamiento específico de la app";
+            }
+            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show();
             return false;
         }
+    }
+    /**
+     * Genera PDF cuando los datos del LiveData estén disponibles
+     * @param sensorLiveData LiveData con la lista de sensores
+     * @param fileName Nombre del archivo
+     * @param lifecycleOwner Activity/Fragment dueño del ciclo de vida
+     */
+    public void generateFromLiveData(LiveData<List<Sensor>> sensorLiveData, String fileName, LifecycleOwner lifecycleOwner) {
+        sensorLiveData.observe(lifecycleOwner, sensorList -> {
+            if (sensorList != null && !sensorList.isEmpty()) {
+                generateSensorReport(sensorList, fileName);
+                // Opcional: dejar de observar después de generar el PDF
+                sensorLiveData.removeObservers(lifecycleOwner);
+            }
+        });
     }
 
     private void addTitle(Document document) throws DocumentException {
@@ -128,7 +168,7 @@ public class PDFGenerator {
         table.addCell(formatDouble(sensor.getPresionAtmosferica()));
         table.addCell(formatDouble(sensor.getTemperatura()));
         table.addCell(formatDouble(sensor.getViento()));
-        table.addCell(sensor.getFecha() != null ? dateFormat.format(sensor.getFecha()) : "N/A");
+        //table.addCell(sensor.getFecha() != null ? dateFormat.format(sensor.getFecha()) : "N/A");
     }
 
     private String formatDouble(Double value) {

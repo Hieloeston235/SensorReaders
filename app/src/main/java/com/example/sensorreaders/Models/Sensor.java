@@ -2,6 +2,7 @@ package com.example.sensorreaders.Models;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Date;
@@ -27,10 +28,17 @@ public class Sensor {
     private Double temperatura;
     @ColumnInfo
     private Double viento;
-    @ColumnInfo
-    private Date Fecha;
+    @ColumnInfo(name = "firebase_key")
+    private String firebaseKey;
 
-    public Sensor(Double gas, Double humedad, Double humedadSuelo, Double humo, Double lluvia, Double presionAtmosferica, Double temperatura, Double viento, Date fecha) {
+    @ColumnInfo(name = "is_local_only")
+    private boolean isLocalOnly;
+
+    @Ignore
+    public Sensor() {
+    }
+
+    public Sensor(Double gas, Double humedad, Double humedadSuelo, Double humo, Double lluvia, Double presionAtmosferica, Double temperatura, Double viento) {
         this.gas = gas;
         this.humedad = humedad;
         this.humedadSuelo = humedadSuelo;
@@ -39,7 +47,22 @@ public class Sensor {
         this.presionAtmosferica = presionAtmosferica;
         this.temperatura = temperatura;
         this.viento = viento;
-        Fecha = fecha;
+    }
+
+    public boolean isLocalOnly() {
+        return isLocalOnly;
+    }
+
+    public void setLocalOnly(boolean localOnly) {
+        isLocalOnly = localOnly;
+    }
+
+    public String getFirebaseKey() {
+        return firebaseKey;
+    }
+
+    public void setFirebaseKey(String firebaseKey) {
+        this.firebaseKey = firebaseKey;
     }
 
     public Double getGas() {
@@ -106,13 +129,8 @@ public class Sensor {
         this.viento = viento;
     }
 
-    public Date getFecha() {
-        return Fecha;
-    }
 
-    public void setFecha(Date fecha) {
-        Fecha = fecha;
-    }
+
 
     public int getId() {
         return id;

@@ -2,16 +2,20 @@ package com.example.sensorreaders;
 
 import static android.content.ContentValues.TAG;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 
-import com.example.sensorreaders.Database.Database;
 import com.example.sensorreaders.Models.Sensor;
+import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -24,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private DatabaseReference MyDataBase;
     private SessionManager sessionManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,54 +44,31 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        loadFragment(new SensorFragment());
+        loadFragment(new HistorialFragment());
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             if (item.getItemId() == R.id.nav_clima_actual) {
-                selectedFragment = new SensorFragment();
+                //selectedFragment = new SensorFragment();
             } else if (item.getItemId() == R.id.nav_historial) {
                 selectedFragment = new HistorialFragment();
             } else if (item.getItemId() == R.id.nav_ajustes) {
                 selectedFragment = new AjustesFragment();
             }
-         //para probar sensores
-         List<String> sensoresN = Arrays.asList("Aire", "Agua","Tierra","Fuego");
-         List<String> sensoresH = Arrays.asList("Ayer", "Hoy", "Mañana", "La semana pasada");
-         List<Double> sensoresV = Arrays.asList(24.99, 67.99, 123.456, 7.89);
-         Random random = new Random();
          MyDataBase = FirebaseDatabase.getInstance().getReference();
 
             return loadFragment(selectedFragment);
         });
-         // 1. Obtén los datos de tu Room Database
-/*         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                 AppDatabase.class, "nombre-de-tu-bd").build();
 
-         List<Sensor> sensorData = db.sensorDao().getAllSensors(); // Asegúrate de tener este método en tu DAO
-*/
-         Database db = Database.getInstance(MainActivity.this);
+        SensorViewModel viewModel = new SensorViewModel(MainActivity.this.getApplication());
+        LiveData<List<Sensor>> sensorData = viewModel.getSensorList();
 
-// 2. Crea el PDF
+            // 2. Crea el PDF
          PDFGenerator pdfGenerator = new PDFGenerator(this);
-         pdfGenerator.generateSensorReport(sensorData, "reporte_sensores_" + System.currentTimeMillis());
-         //AgregarSensor(new Sensor(sensoresN.get(random.nextInt(sensoresN.size())), sensoresV.get(random.nextInt(sensoresV.size())), sensoresH.get(random.nextInt(sensoresH.size()))));
+         pdfGenerator.generateFromLiveData(sensorData, "reporte_sensores_" + System.currentTimeMillis(),this);
+
 
          //Los infieles se quejan del trabajo de los fieles
-     }
-
-        //para probar sensores
-        List<String> sensoresN = Arrays.asList("Aire", "Agua","Tierra","Fuego");
-        List<String> sensoresH = Arrays.asList("Ayer", "Hoy", "Mañana", "La semana pasada");
-        List<Double> sensoresV = Arrays.asList(24.99, 67.99, 123.456, 7.89);
-
-        Random random = new Random();
-
-        MyDataBase = FirebaseDatabase.getInstance().getReference();
-
-        AgregarSensor(new Sensor(sensoresN.get(random.nextInt(sensoresN.size())), sensoresV.get(random.nextInt(sensoresV.size())), sensoresH.get(random.nextInt(sensoresH.size()))));
-
-        //Los infieles se quejan del trabajo de los fieles
     }
 
     @Override
@@ -163,3 +145,4 @@ public class MainActivity extends AppCompatActivity {
         return sessionManager;
     }
 }
+

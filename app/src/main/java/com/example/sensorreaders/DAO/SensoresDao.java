@@ -23,5 +23,6 @@ public interface SensoresDao {
     void update (Sensor sensor);
     @Delete
     void delete(Sensor sensor);
-
+    @Query("SELECT * FROM sensores_datosensor")
+    List<Sensor> getall();
 }
