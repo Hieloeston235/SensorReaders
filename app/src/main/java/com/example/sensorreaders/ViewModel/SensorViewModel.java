@@ -79,4 +79,7 @@ public class SensorViewModel extends AndroidViewModel {
             // y actualizará automáticamente los datos locales
         });
     }
+    public void refreshFROMApi(){
+        repository.refreshFromApi();
+    }
 }

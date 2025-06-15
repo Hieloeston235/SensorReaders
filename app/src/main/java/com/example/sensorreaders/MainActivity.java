@@ -65,28 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
             return loadFragment(selectedFragment);
         });
-
-
-        //Ejemplo de como crear pdf y excel a partir de livedata de un bd local
-        new Thread(() -> {
-            boolean reachable = isServerReachable("100.66.204.124", 8000);
-            runOnUiThread(() -> {
-                if (reachable) {
-                    Toast.makeText(this, "Servidor disponible", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Servidor NO disponible", Toast.LENGTH_SHORT).show();
-                }
-            });
-            Log.d("ConexionTest", "Servidor reachable? " + reachable);
-        }).start();
-
-
-
-        // 2. Crea el PDF y EXCEL
-        //pdfGenerator = new PDFGenerator(MainActivity.this);
-        //pdfGenerator.generateBothFromLiveData(sensorData, "reporte_sensores_" + System.currentTimeMillis(),MainActivity.this);
-
-
+        
         //Los infieles se quejan del trabajo de los fieles
     }
 
@@ -100,14 +79,7 @@ public class MainActivity extends AppCompatActivity {
             sessionManager.updateLastActivity();
         }
     }
-    public boolean isServerReachable(String ip, int port) {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(ip, port), 3000);
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
+
 
 
     @Override

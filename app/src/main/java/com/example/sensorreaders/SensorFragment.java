@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -29,7 +30,7 @@ import java.util.Locale;
 public class SensorFragment extends Fragment {
 
     private TextView tvTemperatura, tvHumedad, tvPresion, tvViento, tvLuz, tvLluvia, tvGas, tvHumo, tvHumedadSuelo;
-    private Button btnDescargarPDF, btnDescargarExcel;
+    private Button btnDescargarPDF, btnDescargarExcel, btnRefrescar;
     private SensorViewModel viewModels;
     private PDFGenerator pdfGenerator;
     private LiveData<List<Sensor>> listaSensores;
@@ -62,6 +63,7 @@ public class SensorFragment extends Fragment {
 
         btnDescargarExcel = view.findViewById(R.id.btnDescargarExcel);
         btnDescargarPDF = view.findViewById(R.id.btnDescargarPDF);
+        btnRefrescar = view.findViewById(R.id.btnActualizar);
 
         listaSensores.observe(getActivity(), sensors -> {
             if (sensors != null && !sensors.isEmpty()) {
@@ -102,6 +104,11 @@ public class SensorFragment extends Fragment {
         });
         btnDescargarPDF.setOnClickListener(v -> {
             pdfGenerator.generateFromLiveData(listaSensores,"Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
+        });
+
+        btnRefrescar.setOnClickListener(v->{
+            viewModels.refreshFROMApi();
+            Toast.makeText(getContext(), "Refrescando datos....", Toast.LENGTH_SHORT).show();
         });
 
 
