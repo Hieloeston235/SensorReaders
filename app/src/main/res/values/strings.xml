@@ -1,3 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SensorReaders</string>
+    <string name="app_name">WeatherSense</string>
+
+    <!-- Splash Screen -->
+    <string name="app_subtitle">Weather Channel</string>
+    <string name="loading_text">Iniciando...</string>
+    <string name="copyright_text">© 2025 Grupo pdm</string>
+
+    <!-- Login Screen -->
+    <string name="welcome_back">Bienvenido de Nuevo </string>
+    <string name="sign_in_subtitle">Inicia Sesion</string>
+    <string name="email_hint">Correo</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="sign_in_button">Iniciar Sesion</string>
+    <string name="forgot_password">Olvidaste tu contraseña?</string>
+    <string name="no_account">No tienes una cuenta? </string>
+    <string name="sign_up_link">Crea una cuenta</string>
+
+    <!-- Register Screen -->
+    <string name="create_account">Crear Cuenta</string>
+    <string name="join_us">Unete a nuestra familia</string>
+    <string name="full_name_hint">Nombre Completo</string>
+    <string name="confirm_password_hint">Confirmar Contraseña</string>
+    <string name="create_account_button">Crear Cuenta</string>
+    <string name="have_account">Ya tienes una cuenta?</string>
+    <string name="sign_in_link">Ininicia Sesion</string>
+
+    <!-- Error Messages -->
+    <string name="error_empty_email">Porfavor Ingresa tu Correo</string>
+    <string name="error_invalid_email">Porfavor Ingresa un Correo Valido</string>
+    <string name="error_empty_password">Porfavor Ingrese la contraseña</string>
+    <string name="error_weak_password">la Contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_passwords_dont_match">la contraseña no coincide</string>
+    <string name="error_empty_name">Porfavor ingresa tu nombre completo</string>
+    <string name="error_login_failed">Inicio de Sesion Fallido. Trata de nuevo.</string>
+    <string name="error_registration_failed">Registro Fallido.Trata de nuevo.</string>
+
+    <!-- Success Messages -->
+    <string name="registration_successful">Cuenta Creada con Exito!</string>
+    <string name="login_successful">Bienvenido de Nuevo!</string>
 </resources>
