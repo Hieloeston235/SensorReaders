@@ -31,9 +31,9 @@ public class SensorAdapter extends RecyclerView.Adapter<SensorAdapter.SensorView
     @Override
     public void onBindViewHolder(@NonNull SensorViewHolder holder, int position) {
         Sensor sensor = sensorList.get(position);
-        holder.nombreTextView.setText(sensor.getNombre());
-        holder.valorTextView.setText("Valor: " + sensor.getValor());
-        holder.horaTextView.setText("Hora: " + sensor.getHora());
+        //holder.nombreTextView.setText(sensor.getNombre());
+        //holder.valorTextView.setText("Valor: " + sensor.getValor());
+        //holder.horaTextView.setText("Hora: " + sensor.getHora());
     }
 
     @Override

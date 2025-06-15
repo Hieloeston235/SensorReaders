@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.sensorreaders.Database.Database;
 import com.example.sensorreaders.Models.Sensor;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DatabaseReference;
@@ -48,6 +49,18 @@ import java.util.Random;
          List<Double> sensoresV = Arrays.asList(24.99, 67.99, 123.456, 7.89);
          Random random = new Random();
          MyDataBase = FirebaseDatabase.getInstance().getReference();
+
+         // 1. Obtén los datos de tu Room Database
+/*         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                 AppDatabase.class, "nombre-de-tu-bd").build();
+
+         List<Sensor> sensorData = db.sensorDao().getAllSensors(); // Asegúrate de tener este método en tu DAO
+*/
+         Database db = Database.getInstance(MainActivity.this);
+
+// 2. Crea el PDF
+         PDFGenerator pdfGenerator = new PDFGenerator(this);
+         pdfGenerator.generateSensorReport(sensorData, "reporte_sensores_" + System.currentTimeMillis());
          //AgregarSensor(new Sensor(sensoresN.get(random.nextInt(sensoresN.size())), sensoresV.get(random.nextInt(sensoresV.size())), sensoresH.get(random.nextInt(sensoresH.size()))));
 
          //Los infieles se quejan del trabajo de los fieles

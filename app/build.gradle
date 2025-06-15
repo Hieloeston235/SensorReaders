@@ -81,4 +81,8 @@ dependencies {
     // optional - Paging 3 Integration
     implementation "androidx.room:room-paging:$room_version"
 
+
+    implementation 'com.itextpdf:itextg:5.5.10'
+    implementation 'com.google.firebase:firebase-firestore:23.0.0' // o la versión más reciente
+
 }
