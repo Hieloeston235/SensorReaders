@@ -3,7 +3,7 @@
     <string name="app_name">WeatherSense</string>
 
     <!-- Splash Screen -->
-    <string name="app_subtitle">Weather Channel</string>
+    <string name="app_subtitle">Weather Station</string>
     <string name="loading_text">Iniciando...</string>
     <string name="copyright_text">© 2025 Grupo pdm</string>
 
@@ -24,7 +24,7 @@
     <string name="confirm_password_hint">Confirmar Contraseña</string>
     <string name="create_account_button">Crear Cuenta</string>
     <string name="have_account">Ya tienes una cuenta?</string>
-    <string name="sign_in_link">Ininicia Sesion</string>
+    <string name="sign_in_link">Inicia Sesion</string>
 
     <!-- Error Messages -->
     <string name="error_empty_email">Porfavor Ingresa tu Correo</string>
@@ -39,4 +39,6 @@
     <!-- Success Messages -->
     <string name="registration_successful">Cuenta Creada con Exito!</string>
     <string name="login_successful">Bienvenido de Nuevo!</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.sensorreaders" />
-                  <option name="mobileSdkAppId" value="1:492799355497:android:fc839c150bcbc45a5010f8" />
-                  <option name="projectId" value="dataprueba-4baf4" />
-                  <option name="projectNumber" value="492799355497" />
+                  <option name="mobileSdkAppId" value="1:486224547345:android:59977a40fb490252b12bb0" />
+                  <option name="projectId" value="sensores-cd82f" />
+                  <option name="projectNumber" value="486224547345" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

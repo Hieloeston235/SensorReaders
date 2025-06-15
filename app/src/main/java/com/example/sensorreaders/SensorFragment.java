@@ -36,10 +36,6 @@ public class SensorFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sensor, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerViewSensors);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new SensorAdapter(listaSensores);
-        recyclerView.setAdapter(adapter);
 
         MyDataBase = FirebaseDatabase.getInstance().getReference();
         cargarSensores();
