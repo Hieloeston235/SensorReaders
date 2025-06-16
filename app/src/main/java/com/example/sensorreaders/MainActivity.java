@@ -2,29 +2,28 @@ package com.example.sensorreaders;
 
 import static android.content.ContentValues.TAG;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.lifecycle.LiveData;
 
+import com.example.sensorreaders.Database.database;
+import com.example.sensorreaders.Models.Sensor;
+import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -34,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private DatabaseReference MyDataBase;
     private SessionManager sessionManager;
+    private PDFGenerator pdfGenerator;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,21 +61,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.nav_ajustes) {
                 selectedFragment = new AjustesFragment();
             }
+         MyDataBase = FirebaseDatabase.getInstance().getReference();
 
             return loadFragment(selectedFragment);
         });
-
-        //para probar sensores
-        List<String> sensoresN = Arrays.asList("Aire", "Agua","Tierra","Fuego");
-        List<String> sensoresH = Arrays.asList("Ayer", "Hoy", "Mañana", "La semana pasada");
-        List<Double> sensoresV = Arrays.asList(24.99, 67.99, 123.456, 7.89);
-
-        Random random = new Random();
-
-        MyDataBase = FirebaseDatabase.getInstance().getReference();
-
-        AgregarSensor(new Sensor(sensoresN.get(random.nextInt(sensoresN.size())), sensoresV.get(random.nextInt(sensoresV.size())), sensoresH.get(random.nextInt(sensoresH.size()))));
-
+        
         //Los infieles se quejan del trabajo de los fieles
     }
 
@@ -88,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
             sessionManager.updateLastActivity();
         }
     }
+
+
 
     @Override
     protected void onPause() {
@@ -118,15 +111,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    //funcion para agregar sensores (sirve de prueba borrar al entregar)
-    private void AgregarSensor(Sensor sensor){
-        MyDataBase.child("sensores")
-                .push()
-                .setValue(sensor)
-                .addOnFailureListener(e -> {
-                    Log.e(TAG,"Error añadir sensores" + e.getMessage());
-                });
-    }
 
     /**
      * Método público para cerrar sesión (llamado desde AjustesFragment)
@@ -152,3 +136,4 @@ public class MainActivity extends AppCompatActivity {
         return sessionManager;
     }
 }
+

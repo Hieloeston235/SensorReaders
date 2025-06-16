@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "486224547345",
+    "firebase_url": "https://sensores-cd82f-default-rtdb.firebaseio.com",
+    "project_id": "sensores-cd82f",
+    "storage_bucket": "sensores-cd82f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486224547345:android:59977a40fb490252b12bb0",
+        "android_client_info": {
+          "package_name": "com.example.sensorreaders"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8--gfhfQtO2RrxUSOvtAHD-BMX3GWaOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
