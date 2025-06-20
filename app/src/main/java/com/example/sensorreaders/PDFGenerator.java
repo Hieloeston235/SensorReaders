@@ -200,7 +200,9 @@ public class PDFGenerator {
         else if (valor <= 700) return "Normal";
         else return "Brillante";
     }
-    private String interpretarGas(double valor) {
+
+    private String interpretarGas(Double valor) {
+        if (valor == null) return "N/A";
         if (valor < 100) return "Bajo";
         else if (valor <= 300) return "Moderado";
         else return "Alto";
@@ -292,6 +294,15 @@ public class PDFGenerator {
             }
         });
     }
+
+    public void generateFromList(List<Sensor> sensorList, String fileName, Context context) {
+        generateSensorReport(sensorList, fileName);
+    }
+
+    public void generateExcelFromList(List<Sensor> sensorList, String fileName, Context context) {
+        generateSensorExcelReport(sensorList, fileName);
+    }
+
 
     /**
      * Genera un archivo Excel y Pdf cuando los datos del LiveData estén disponibles

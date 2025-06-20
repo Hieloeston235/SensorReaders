@@ -55,10 +55,10 @@ public class SensorRepository {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         apiService = retrofit.create(SensorApiService.class);
-        syncWithApi();
-        //firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
+        //syncWithApi();
+        firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
 
-        //starFirebaseSync();
+        starFirebaseSync();
     }
     private void syncWithApi() {
         apiService.getSensores().enqueue(new Callback<List<Sensor>>() {
