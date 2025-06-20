@@ -1,4 +1,19 @@
+# Gradle
 .gradle/
 build/
+!gradle-wrapper.jar
+
+# Android
 local.properties
+
+# IDEs
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs y otros
+*.log
 *.lock
