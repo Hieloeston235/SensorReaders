@@ -10,10 +10,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sensorreaders.Models.Sensor;
 
+
 import java.text.BreakIterator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -40,6 +42,7 @@ public class SensorAdapter extends RecyclerView.Adapter<SensorAdapter.SensorView
     @Override
     public void onBindViewHolder(@NonNull SensorViewHolder holder, int position) {
         Sensor sensor = sensorList.get(position);
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         String fechaStr = sdf.format(new Date(sensor.getFecha()));
         holder.horaTextView.setText("🕒 " + fechaStr);
@@ -58,6 +61,7 @@ public class SensorAdapter extends RecyclerView.Adapter<SensorAdapter.SensorView
                 interpretarViento(sensor.getViento()));
 
         holder.extrasTextView.setText(extras);
+
     }
 
     @Override
