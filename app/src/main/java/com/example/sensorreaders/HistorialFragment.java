@@ -49,7 +49,6 @@ public class HistorialFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializa componentes
         btnHoy = view.findViewById(R.id.btnHoy);
         btnAyer = view.findViewById(R.id.btnAyer);
         btn7Dias = view.findViewById(R.id.btn7Dias);
@@ -65,12 +64,11 @@ public class HistorialFragment extends Fragment {
         viewModel = new SensorViewModel(getActivity().getApplication());
         viewModel.refreshFROMApi();
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new SensorAdapter(); // Asume que ya lo tienes
+        adapter = new SensorAdapter();
         recyclerViewHistorial.setAdapter(adapter);
 
-        // Observa la lista de sensores y actualiza el RecyclerView
         viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
-            aplicarFiltroYMostrar(sensores); // Muestra los datos si ya hay filtro
+            aplicarFiltroYMostrar(sensores);
         });
 
         // Botones de filtro
@@ -97,7 +95,6 @@ public class HistorialFragment extends Fragment {
             aplicarFiltroYMostrar(viewModel.getSensorList().getValue());
         });
 
-        // Botón aplicar filtro (útil si usas un DatePicker, aquí no implementado aún)
         btnAplicarFiltro.setOnClickListener(v -> {
             if (fechaInicio != null && fechaFin != null) {
                 aplicarFiltroYMostrar(viewModel.getSensorList().getValue());
@@ -106,7 +103,7 @@ public class HistorialFragment extends Fragment {
             }
         });
 
-        // Descarga PDF / Excel
+
         btnDescargarPDF.setOnClickListener(v -> {
             if (datosFiltrados != null && !datosFiltrados.isEmpty()) {
                 pdfGenerator.generateFromList(datosFiltrados, "Historial_PDF_" + System.currentTimeMillis(), getActivity());
@@ -132,7 +129,6 @@ public class HistorialFragment extends Fragment {
         }
 
         if (fechaInicio == null || fechaFin == null) {
-            // Si no hay filtro definido, muestra todo
             datosFiltrados = lista;
         } else {
             datosFiltrados = lista.stream()
@@ -152,8 +148,6 @@ public class HistorialFragment extends Fragment {
             adapter.setSensorList(datosFiltrados);
         }
     }
-
-    // Métodos auxiliares para manipular fechas
     private Date inicioDelDia(Date fecha) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(fecha);

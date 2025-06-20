@@ -200,7 +200,8 @@ public class PDFGenerator {
         else if (valor <= 700) return "Normal";
         else return "Brillante";
     }
-    private String interpretarGas(double valor) {
+    private String interpretarGas(Double valor) {
+        if (valor == null) return "N/A";
         if (valor < 100) return "Bajo";
         else if (valor <= 300) return "Moderado";
         else return "Alto";
