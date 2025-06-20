@@ -293,6 +293,15 @@ public class PDFGenerator {
         });
     }
 
+    public void generateFromList(List<Sensor> sensorList, String fileName, Context context) {
+        generateSensorReport(sensorList, fileName);
+    }
+
+    public void generateExcelFromList(List<Sensor> sensorList, String fileName, Context context) {
+        generateSensorExcelReport(sensorList, fileName);
+    }
+
+
     /**
      * Genera un archivo Excel y Pdf cuando los datos del LiveData estén disponibles
      * @param sensorLiveData LiveData con la lista de sensores

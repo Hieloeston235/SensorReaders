@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_margin="8dp"
     android:layout_height="wrap_content"
-    card_view:cardCornerRadius="8dp"
-    card_view:cardElevation="4dp">
+    card_view:cardCornerRadius="12dp"
+    card_view:cardElevation="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,27 +14,32 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/tvSensorName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nombre del Sensor"
-            android:textStyle="bold"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/tvSensorValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Valor: 0.0"
-            android:textSize="16sp" />
-
-        <TextView
             android:id="@+id/tvSensorTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hora: 12:00"
+            android:text="🕒 12/06/2025 13:45"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#444"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvSensorResumen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temp: 24.5°C | Humedad: 56% | Gas: Moderado"
             android:textSize="14sp"
-            android:textColor="#666" />
+            android:textColor="#222" />
+
+        <TextView
+            android:id="@+id/tvSensorExtras"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lluvia: No | Presión: Normal | Viento: Brisa leve"
+            android:textSize="13sp"
+            android:textColor="#555"
+            android:layout_marginTop="4dp" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
+
