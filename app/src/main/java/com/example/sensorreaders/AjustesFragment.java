@@ -160,9 +160,28 @@ public class AjustesFragment extends Fragment {
     private void showAboutDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Acerca de Weather Station");
+
         builder.setMessage("Weather Station v1.0.0\n\n" +
-                "Aplicación para monitoreo de sensores meteorológicos.\n\n" +
-                "Desarrollado con ❤️ para el control de estaciones climáticas.");
+                "Aplicación de estación meteorológica creada en el Ciclo 1 del año 2025, como parte de la materia de " +
+                "Programación de Dispositivos Móviles (PDM) impartido por el Ingeniero Javier Paíz.\n\n" +
+                "Esta app permite el monitoreo en tiempo real de sensores meteorológicos, ofreciendo también un historial " +
+                "completo de los datos registrados. Está diseñada para brindar a los usuarios información precisa sobre las " +
+                "condiciones ambientales actuales y pasadas.\n\n" +
+                "Datos que se monitorean:\n" +
+                "- Fecha y Hora\n" +
+                "- Temperatura\n" +
+                "- Humedad relativa del aire\n" +
+                "- Presión atmosférica\n" +
+                "- Humedad del suelo\n" +
+                "- Intensidad de luz\n" +
+                "- Velocidad del viento\n" +
+                "- Si hay lluvia\n" +
+                "- Detección de humo\n" +
+                "- Calidad del aire (gas)\n\n" +
+                "Desarrollado con ❤️ por:\n" +
+                "• Meybell Jacqueline Ramírez (RQ22004)\n" +
+                "• Arturo Elías Torres Esperanza (TE22003)\n" +
+                "• Gabriel Enrique De la O Aguirre (DO22023)");
 
         builder.setPositiveButton("Cerrar", new DialogInterface.OnClickListener() {
             @Override
@@ -173,4 +192,5 @@ public class AjustesFragment extends Fragment {
 
         builder.create().show();
     }
+
 }

@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_clima_actual"
-        android:icon="@drawable/ic_weather_color"
+        android:icon="@drawable/clima_icon"
         android:title="Clima Actual" />
     <item
         android:id="@+id/nav_historial"
-        android:icon="@drawable/ic_historial_color"
+        android:icon="@drawable/historiall_icon"
         android:title="Historial del Clima" />
     <item
         android:id="@+id/nav_ajustes"
