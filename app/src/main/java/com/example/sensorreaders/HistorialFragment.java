@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,11 +84,19 @@ public class HistorialFragment extends Fragment {
         layoutNoData = view.findViewById(R.id.layoutNoData);
         tvContadorRegistros = view.findViewById(R.id.tvContadorRegistros);
     }
+    private void RefreshConection(){
+        if (NetworkUtil.isConnectedToInternet(getActivity())) {
+            viewModel.refreshFromFirebase();
+            Log.d("Refresh", "Refrescando desde la API...");
+        } else {
+            Log.d("Refresh", "Sin conexión. Mostrando datos locales.");
+        }
+    }
 
     private void setupViewModelAndRecyclerView() {
         pdfGenerator = new PDFGenerator(getContext());
         viewModel = new SensorViewModel(getActivity().getApplication());
-        viewModel.refreshFROMApi();
+        RefreshConection();
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SensorAdapter();
         recyclerViewHistorial.setAdapter(adapter);
