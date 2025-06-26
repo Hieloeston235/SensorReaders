@@ -67,12 +67,16 @@ public class SensorRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     executorService.execute(() -> {
                         List<Sensor> apiSensors = response.body();
+
+                        // Borra todos los sensores locales antes de insertar
+                        sensoresDao.deleteAll();
+
                         for (Sensor sensor : apiSensors) {
-                            // Si quieres guardar la fecha actual como inserción
-                            //sensor.setFecha(System.currentTimeMillis());
                             sensoresDao.insert(sensor);
                         }
                     });
+
+
                 } else {
                     Log.e("API", "Respuesta fallida: " + response.code());
                 }
@@ -84,6 +88,7 @@ public class SensorRepository {
             }
         });
     }
+
     public void refreshFromApi() {
         syncWithApi();
     }

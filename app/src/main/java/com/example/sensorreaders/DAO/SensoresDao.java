@@ -30,4 +30,6 @@ public interface SensoresDao {
     @Upsert
     void upsert(Sensor sensor);
 
+    @Query("DELETE FROM sensores_datosensor")
+    void deleteAll();
 }

@@ -21,4 +21,21 @@ public abstract class  database extends RoomDatabase {
         return INSTANCE;
     }
     public static void deletBD(){INSTANCE = null;}
+
+    public static void RestartBD(Context context){
+        // Cierra la instancia actual si está abierta
+        if (INSTANCE != null) {
+            INSTANCE.close();
+            INSTANCE = null;
+        }
+
+        // Elimina la base de datos física
+        context.deleteDatabase("ClimaApp");
+
+        // Crea una nueva instancia de la BD
+        INSTANCE = Room.databaseBuilder(context.getApplicationContext(), database.class, "ClimaApp")
+                .fallbackToDestructiveMigration()
+                .build();
+    }
+
 }

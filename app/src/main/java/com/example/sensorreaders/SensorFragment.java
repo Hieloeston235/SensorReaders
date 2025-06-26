@@ -57,6 +57,24 @@ public class SensorFragment extends Fragment {
     // Límite de puntos en el gráfico
     private static final int MAX_DATA_POINTS = 20;
 
+    private final android.os.Handler autoRefreshHandler = new android.os.Handler();
+    private final int REFRESH_INTERVAL_MS = 60_000; // 60 segundos
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (getActivity() != null) {
+                if (NetworkUtil.isConnectedToInternet(getActivity())) {
+                    viewModels.refreshFROMApi();
+                    Log.d("AutoRefresh", "Refrescando desde la API...");
+                } else {
+                    Log.d("AutoRefresh", "Sin conexión. Mostrando datos locales.");
+                }
+                autoRefreshHandler.postDelayed(this, REFRESH_INTERVAL_MS);
+            }
+        }
+    };
+
+
     public SensorFragment() {
         // Constructor vacío obligatorio
     }
@@ -74,6 +92,7 @@ public class SensorFragment extends Fragment {
         setupCharts();
         observeData();
         setupButtons();
+        autoRefreshHandler.postDelayed(autoRefreshRunnable, REFRESH_INTERVAL_MS);
         updateCurrentDate();
 
         return view;
@@ -315,5 +334,7 @@ public class SensorFragment extends Fragment {
         if (luzEntries != null) luzEntries.clear();
         if (vientoEntries != null) vientoEntries.clear();
         if (timeLabels != null) timeLabels.clear();
+        autoRefreshHandler.removeCallbacks(autoRefreshRunnable);
+
     }
 }
