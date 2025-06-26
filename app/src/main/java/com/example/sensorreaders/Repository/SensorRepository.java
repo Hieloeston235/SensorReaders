@@ -58,7 +58,7 @@ public class SensorRepository {
         //syncWithApi();
         firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
 
-        starFirebaseSync();
+        //starFirebaseSync();
     }
     private void syncWithApi() {
         apiService.getSensores().enqueue(new Callback<List<Sensor>>() {
