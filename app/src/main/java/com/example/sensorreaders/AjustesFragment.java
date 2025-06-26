@@ -130,10 +130,6 @@ public class AjustesFragment extends Fragment {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         });
 
-        switchTemaOscuro.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            String message = isChecked ? "Tema oscuro activado" : "Tema claro activado";
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-        });
     }
 
     private void showEditProfileDialog() {
