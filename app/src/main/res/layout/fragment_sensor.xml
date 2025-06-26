@@ -52,6 +52,31 @@
                     android:textColor="@color/text_secondary"
                     android:layout_marginTop="4dp" />
 
+                <!-- Indicador de Estado de Conexión -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:id="@+id/indicadorConexion"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="#4CAF50"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/tvEstadoConexion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="En línea"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+
+                </LinearLayout>
+
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
@@ -90,7 +115,7 @@
                         android:id="@+id/tvTemperatura"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="25.0°C"
+                        android:text="-- °C"
                         android:textSize="24sp"
                         android:textColor="@color/primary_color"
                         android:textStyle="bold" />
@@ -133,7 +158,7 @@
                         android:id="@+id/tvHumedad"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="65%"
+                        android:text="--%"
                         android:textSize="24sp"
                         android:textColor="@color/accent_color"
                         android:textStyle="bold" />
@@ -151,100 +176,134 @@
 
         </LinearLayout>
 
-        <!-- Presión y Viento -->
-        <LinearLayout
+        <!-- GRÁFICOS EN TIEMPO REAL -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/white">
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="@color/white">
+                android:orientation="vertical"
+                android:padding="16dp">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📊 Monitoreo Gráfico en Tiempo Real"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Gráfico de Presión Atmosférica -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
+                    android:layout_marginBottom="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📊"
-                        android:textSize="28sp"
+                        android:text="📊 Presión Atmosférica"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/chartPresion"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
                         android:id="@+id/tvPresion"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1013 hPa"
-                        android:textSize="18sp"
+                        android:text="-- hPa"
+                        android:textSize="16sp"
                         android:textColor="@color/success_color"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Presión"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textStyle="bold"
+                        android:layout_gravity="center" />
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="@color/white">
-
+                <!-- Gráfico de Intensidad Lumínica -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
+                    android:layout_marginBottom="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="💨"
-                        android:textSize="28sp"
+                        android:text="☀️ Intensidad Lumínica"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/chartLuz"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvLuz"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-- lux"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                        android:layout_gravity="center" />
+
+                </LinearLayout>
+
+                <!-- Gráfico de Viento -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💨 Velocidad del Viento"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/chartViento"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
                         android:id="@+id/tvViento"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="12 km/h"
-                        android:textSize="18sp"
+                        android:text="-- km/h"
+                        android:textSize="16sp"
                         android:textColor="@color/primary_dark"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Viento"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textStyle="bold"
+                        android:layout_gravity="center" />
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </LinearLayout>
 
-        </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Sensores Ambientales -->
         <androidx.cardview.widget.CardView
@@ -270,51 +329,12 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Luz y Lluvia -->
+                <!-- Lluvia y Gas -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginBottom="12dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="☀️"
-                            android:textSize="20sp"
-                            android:layout_marginEnd="8dp" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvLuz"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="450 lux"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Luz"
-                                android:textSize="10sp"
-                                android:textColor="@color/text_secondary" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -339,7 +359,7 @@
                                 android:id="@+id/tvLluvia"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="0 mm"
+                                android:text="--"
                                 android:textSize="14sp"
                                 android:textColor="@color/text_primary"
                                 android:textStyle="bold" />
@@ -354,15 +374,6 @@
                         </LinearLayout>
 
                     </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- Gas y Humo -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -387,7 +398,7 @@
                                 android:id="@+id/tvGas"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="0.1 ppm"
+                                android:text="-- ppm"
                                 android:textSize="14sp"
                                 android:textColor="@color/text_primary"
                                 android:textStyle="bold" />
@@ -402,6 +413,14 @@
                         </LinearLayout>
 
                     </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Humo y Humedad del Suelo -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -426,7 +445,7 @@
                                 android:id="@+id/tvHumo"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="0.05 ppm"
+                                android:text="-- ppm"
                                 android:textSize="14sp"
                                 android:textColor="@color/text_primary"
                                 android:textStyle="bold" />
@@ -442,42 +461,42 @@
 
                     </LinearLayout>
 
-                </LinearLayout>
-
-                <!-- Humedad del Suelo -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🌱"
-                        android:textSize="20sp"
-                        android:layout_marginEnd="8dp" />
-
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvHumedadSuelo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="35%"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_primary"
-                            android:textStyle="bold" />
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Humedad del Suelo"
-                            android:textSize="10sp"
-                            android:textColor="@color/text_secondary" />
+                            android:text="🌱"
+                            android:textSize="20sp"
+                            android:layout_marginEnd="8dp" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvHumedadSuelo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--%"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Humedad del Suelo"
+                                android:textSize="10sp"
+                                android:textColor="@color/text_secondary" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
