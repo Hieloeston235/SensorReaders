@@ -3,9 +3,13 @@ package com.example.sensorreaders;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
@@ -16,9 +20,12 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 
 import com.example.sensorreaders.Models.Sensor;
+import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -31,13 +38,31 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import java.util.Collections;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+
 
 public class PDFGenerator {
 
@@ -74,6 +99,14 @@ public class PDFGenerator {
             addTitle(document);
             addMetadata(document);
             addSensorDataTable(document, sensorList);
+
+            // 🔽 Agrega aquí el gráfico después de la tabla
+            Bitmap chartBitmap = generateChart(sensorList);
+            if (chartBitmap != null) {
+                addChartToDocument(document, chartBitmap);
+            }
+
+
             document.close();
 
             Toast.makeText(context, "PDF generado en:\n" + file.getPath(), Toast.LENGTH_LONG).show();
@@ -84,6 +117,237 @@ public class PDFGenerator {
             Toast.makeText(context, "Error al generar PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("PDFGenerator", "generateSensorReport: " + e.getMessage());
             return false;
+        }
+    }
+
+    private Bitmap generateChart(List<Sensor> sensorList) {
+        try {
+            // Crear un contexto limpio para el gráfico
+            Context chartContext = context.getApplicationContext();
+
+            // Crear el LineChart con un ID único para evitar conflictos
+            LineChart lineChart = new LineChart(chartContext);
+            lineChart.setId(View.generateViewId()); // ID único
+
+            // Configurar dimensiones fijas
+            int chartWidth = 800;
+            int chartHeight = 600;
+            lineChart.setLayoutParams(new ViewGroup.LayoutParams(chartWidth, chartHeight));
+
+            // Preparar datos
+            List<Entry> entries = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            int index = 0;
+            for (Sensor sensor : sensorList) {
+                if (sensor.getFecha() > 0 && sensor.getTemperatura() != null) {
+                    entries.add(new Entry(index, sensor.getTemperatura().floatValue()));
+                    labels.add(sdf.format(new Date(sensor.getFecha())));
+                    index++;
+                }
+            }
+
+            // Verificar que hay datos
+            if (entries.isEmpty()) {
+                Log.w("PDFGenerator", "No hay datos de temperatura válidos para el gráfico");
+                return null;
+            }
+
+            // Configurar el dataset
+            LineDataSet dataSet = new LineDataSet(entries, "Temperatura (°C)");
+            dataSet.setColor(Color.BLUE);
+            dataSet.setValueTextColor(Color.BLACK);
+            dataSet.setLineWidth(2f);
+            dataSet.setCircleRadius(3f);
+            dataSet.setDrawCircles(true);
+            dataSet.setDrawValues(false);
+            dataSet.setMode(LineDataSet.Mode.LINEAR);
+
+            LineData lineData = new LineData(dataSet);
+            lineChart.setData(lineData);
+
+            // Configurar apariencia del gráfico
+            lineChart.getDescription().setText("Temperatura");
+            lineChart.getDescription().setTextSize(12f);
+            lineChart.setBackgroundColor(Color.WHITE);
+
+            // Configurar eje X
+            XAxis xAxis = lineChart.getXAxis();
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+            xAxis.setGranularity(1f);
+            xAxis.setLabelCount(Math.min(labels.size(), 8), false); // Máximo 8 etiquetas
+            xAxis.setValueFormatter(new ValueFormatter() {
+                @Override
+                public String getFormattedValue(float value) {
+                    int i = (int) value;
+                    return i >= 0 && i < labels.size() ? labels.get(i) : "";
+                }
+            });
+            xAxis.setTextSize(10f);
+
+            // Configurar eje Y izquierdo
+            YAxis leftAxis = lineChart.getAxisLeft();
+            leftAxis.setTextSize(10f);
+            leftAxis.setGranularity(1f);
+
+            // Deshabilitar eje Y derecho
+            lineChart.getAxisRight().setEnabled(false);
+
+            // Configurar leyenda
+            Legend legend = lineChart.getLegend();
+            legend.setTextSize(12f);
+            legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+
+            // Deshabilitar interacciones
+            lineChart.setTouchEnabled(false);
+            lineChart.setDragEnabled(false);
+            lineChart.setScaleEnabled(false);
+            lineChart.setPinchZoom(false);
+            lineChart.setDoubleTapToZoomEnabled(false);
+
+            // Forzar el layout del gráfico
+            lineChart.measure(
+                    View.MeasureSpec.makeMeasureSpec(chartWidth, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(chartHeight, View.MeasureSpec.EXACTLY)
+            );
+            lineChart.layout(0, 0, chartWidth, chartHeight);
+
+            // Invalidar y notificar cambios de datos
+            lineChart.notifyDataSetChanged();
+            lineChart.invalidate();
+
+            // Esperar un momento para que el layout se complete
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // Generar el bitmap
+            Bitmap bitmap = Bitmap.createBitmap(chartWidth, chartHeight, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            canvas.drawColor(Color.WHITE); // Fondo blanco
+            lineChart.draw(canvas);
+
+            Log.d("PDFGenerator", "Gráfico generado exitosamente con " + entries.size() + " puntos de datos");
+            return bitmap;
+
+        } catch (Exception e) {
+            Log.e("PDFGenerator", "Error al generar gráfico: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private Bitmap generateChartAlternative(List<Sensor> sensorList) {
+        try {
+            // Crear bitmap directamente
+            int width = 800;
+            int height = 600;
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+
+            // Dibujar fondo blanco
+            canvas.drawColor(Color.WHITE);
+
+            // Configurar paint para dibujar
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setStrokeWidth(3f);
+
+            // Preparar datos
+            List<Float> temperatures = new ArrayList<>();
+            List<String> timeLabels = new ArrayList<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            for (Sensor sensor : sensorList) {
+                if (sensor.getFecha() > 0 && sensor.getTemperatura() != null) {
+                    temperatures.add(sensor.getTemperatura().floatValue());
+                    timeLabels.add(sdf.format(new Date(sensor.getFecha())));
+                }
+            }
+
+            if (temperatures.isEmpty()) {
+                return null;
+            }
+
+            // Calcular dimensiones del área de dibujo
+            int margin = 80;
+            int chartWidth = width - (2 * margin);
+            int chartHeight = height - (2 * margin);
+
+            // Encontrar valores min y max para escalar
+            float minTemp = Collections.min(temperatures);
+            float maxTemp = Collections.max(temperatures);
+            float tempRange = maxTemp - minTemp;
+            if (tempRange == 0) tempRange = 1; // Evitar división por cero
+
+            // Dibujar título
+            paint.setTextSize(20f);
+            paint.setColor(Color.BLACK);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText("Temperatura vs. Tiempo", width / 2f, 40f, paint);
+
+            // Dibujar ejes
+            paint.setColor(Color.GRAY);
+            paint.setStrokeWidth(2f);
+            // Eje Y (vertical)
+            canvas.drawLine(margin, margin, margin, height - margin, paint);
+            // Eje X (horizontal)
+            canvas.drawLine(margin, height - margin, width - margin, height - margin, paint);
+
+            // Dibujar línea de datos
+            paint.setColor(Color.BLUE);
+            paint.setStrokeWidth(3f);
+
+            if (temperatures.size() > 1) {
+                Path path = new Path();
+                boolean firstPoint = true;
+
+                for (int i = 0; i < temperatures.size(); i++) {
+                    float x = margin + (i * chartWidth / (float)(temperatures.size() - 1));
+                    float y = height - margin - ((temperatures.get(i) - minTemp) / tempRange * chartHeight);
+
+                    if (firstPoint) {
+                        path.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        path.lineTo(x, y);
+                    }
+
+                    // Dibujar punto
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(x, y, 4f, paint);
+                    paint.setStyle(Paint.Style.STROKE);
+                }
+
+                canvas.drawPath(path, paint);
+            }
+
+            // Dibujar etiquetas del eje Y (temperaturas)
+            paint.setTextSize(12f);
+            paint.setColor(Color.BLACK);
+            paint.setTextAlign(Paint.Align.RIGHT);
+            for (int i = 0; i <= 5; i++) {
+                float temp = minTemp + (tempRange * i / 5f);
+                float y = height - margin - (i * chartHeight / 5f);
+                canvas.drawText(String.format("%.1f°C", temp), margin - 10, y + 5, paint);
+            }
+
+            // Dibujar algunas etiquetas del eje X (tiempo)
+            paint.setTextAlign(Paint.Align.CENTER);
+            int labelStep = Math.max(1, timeLabels.size() / 5);
+            for (int i = 0; i < timeLabels.size(); i += labelStep) {
+                float x = margin + (i * chartWidth / (float)(temperatures.size() - 1));
+                canvas.drawText(timeLabels.get(i), x, height - margin + 20, paint);
+            }
+
+            return bitmap;
+
+        } catch (Exception e) {
+            Log.e("PDFGenerator", "Error en método alternativo: " + e.getMessage(), e);
+            return null;
         }
     }
 
@@ -117,17 +381,61 @@ public class PDFGenerator {
         document.add(table);
     }
 
+
     private void addTableHeader(PdfPTable table) {
-        String[] headers = {
-                "ID", "Gas", "Humedad", "Humedad Suelo", "Humo",
-                "Lluvia","Luz" ,"Presión Atmosf.", "Temperatura", "Viento", "Fecha/Hora"
-        };
+        String[] headers = { "ID", "Gas", "Humedad", "Humedad Suelo", "Humo", "Lluvia", "Luz", "Presión Atmosf.", "Temperatura", "Viento", "Fecha/Hora" };
+        Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+        BaseColor headerColor = BaseColor.DARK_GRAY;
 
         for (String header : headers) {
-            PdfPCell cell = new PdfPCell(new Phrase(header));
+            PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+            cell.setBackgroundColor(headerColor);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(cell);
         }
     }
+
+    private void addChartToDocument(Document document, Bitmap chartBitmap) throws IOException, DocumentException {
+        if (chartBitmap == null) {
+            Log.w("PDFGenerator", "No se pudo generar el gráfico, omitiendo...");
+            return;
+        }
+
+        try {
+            // Agregar espacio antes del gráfico
+            document.add(new Paragraph("\n"));
+
+            // Comprimir bitmap a PNG
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            chartBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            // Crear imagen para el PDF
+            Image chartImage = Image.getInstance(stream.toByteArray());
+
+            // Escalar imagen para que quepa bien en el PDF
+            chartImage.scaleToFit(500, 300);
+            chartImage.setAlignment(Element.ALIGN_CENTER);
+
+            // Agregar título del gráfico
+            Paragraph chartTitle = new Paragraph("Gráfico de Temperaturas:");
+            chartTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(chartTitle);
+
+            // Agregar la imagen
+            document.add(chartImage);
+
+            // Cerrar el stream
+            stream.close();
+
+            Log.d("PDFGenerator", "Gráfico agregado exitosamente al PDF");
+
+        } catch (Exception e) {
+            Log.e("PDFGenerator", "Error al agregar gráfico al documento: " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+
 
     private void addSensorRow(PdfPTable table, Sensor sensor) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
