@@ -61,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.nav_ajustes) {
                 selectedFragment = new AjustesFragment();
             }
+            else if (item.getItemId() == R.id.nav_Graficas) {
+                selectedFragment = new GraficasFragment();
+            }
          MyDataBase = FirebaseDatabase.getInstance().getReference();
 
             return loadFragment(selectedFragment);
