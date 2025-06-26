@@ -92,9 +92,9 @@ public class SensorFragment extends Fragment {
         setupCharts();
         observeData();
         setupButtons();
-        autoRefreshHandler.postDelayed(autoRefreshRunnable, REFRESH_INTERVAL_MS);
+        //autoRefreshHandler.postDelayed(autoRefreshRunnable, REFRESH_INTERVAL_MS);
         updateCurrentDate();
-
+        viewModels.syncWithFirebase();
         return view;
     }
 
