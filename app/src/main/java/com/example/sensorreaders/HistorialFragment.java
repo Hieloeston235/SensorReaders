@@ -87,7 +87,7 @@ public class HistorialFragment extends Fragment {
     private void RefreshConection(){
         if (NetworkUtil.isConnectedToInternet(getActivity())) {
             viewModel.refreshFromFirebase();
-            Log.d("Refresh", "Refrescando desde la API...");
+            Log.d("Refresh", "Refrescando desde la Firebase...");
         } else {
             Log.d("Refresh", "Sin conexión. Mostrando datos locales.");
         }
