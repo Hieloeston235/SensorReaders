@@ -9,6 +9,10 @@
         android:icon="@drawable/historiall_icon"
         android:title="Historial del Clima" />
     <item
+        android:id="@+id/nav_Graficas"
+        android:icon="@drawable/ic_grafic"
+        android:title="Graficas" />
+    <item
         android:id="@+id/nav_ajustes"
         android:icon="@drawable/ic_configuracones_color"
         android:title="Ajustes" />
