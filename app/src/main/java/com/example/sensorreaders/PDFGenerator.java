@@ -100,12 +100,7 @@ public class PDFGenerator {
             addMetadata(document);
             addSensorDataTable(document, sensorList);
 
-            // 🔽 Agrega aquí el gráfico después de la tabla
-            Bitmap chartBitmap = generateChart(sensorList);
-            if (chartBitmap != null) {
-                addChartToDocument(document, chartBitmap);
-            }
-
+            addAllChartsToDocument(document, sensorList);
 
             document.close();
 
@@ -119,6 +114,7 @@ public class PDFGenerator {
             return false;
         }
     }
+
 
     private Bitmap generateChart(List<Sensor> sensorList) {
         try {
@@ -239,6 +235,217 @@ public class PDFGenerator {
             return null;
         }
     }
+    private Bitmap generateSensorChart(List<Sensor> sensorList, String sensorType, String chartTitle) {
+        try {
+            // Crear bitmap directamente
+            int width = 800;
+            int height = 600;
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+
+            // Dibujar fondo blanco
+            canvas.drawColor(Color.WHITE);
+
+            // Configurar paint para dibujar
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setStrokeWidth(3f);
+
+            // Preparar datos según el tipo de sensor
+            List<Float> sensorValues = new ArrayList<>();
+            List<String> timeLabels = new ArrayList<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            String unit = getUnitForSensor(sensorType);
+            int chartColor = getColorForSensor(sensorType);
+
+            for (Sensor sensor : sensorList) {
+                if (sensor.getFecha() > 0) {
+                    Double value = getSensorValue(sensor, sensorType);
+                    if (value != null) {
+                        sensorValues.add(value.floatValue());
+                        timeLabels.add(sdf.format(new Date(sensor.getFecha())));
+                    }
+                }
+            }
+
+            if (sensorValues.isEmpty()) {
+                Log.w("PDFGenerator", "No hay datos válidos para el sensor: " + sensorType);
+                return null;
+            }
+
+            // Calcular dimensiones del área de dibujo
+            int margin = 80;
+            int chartWidth = width - (2 * margin);
+            int chartHeight = height - (2 * margin);
+
+            // Encontrar valores min y max para escalar
+            float minValue = Collections.min(sensorValues);
+            float maxValue = Collections.max(sensorValues);
+            float valueRange = maxValue - minValue;
+            if (valueRange == 0) valueRange = 1; // Evitar división por cero
+
+            // Dibujar título
+            paint.setTextSize(18f);
+            paint.setColor(Color.BLACK);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(chartTitle, width / 2f, 40f, paint);
+
+            // Dibujar ejes
+            paint.setColor(Color.GRAY);
+            paint.setStrokeWidth(2f);
+            // Eje Y (vertical)
+            canvas.drawLine(margin, margin, margin, height - margin, paint);
+            // Eje X (horizontal)
+            canvas.drawLine(margin, height - margin, width - margin, height - margin, paint);
+
+            // Dibujar línea de datos
+            paint.setColor(chartColor);
+            paint.setStrokeWidth(3f);
+
+            if (sensorValues.size() > 1) {
+                Path path = new Path();
+                boolean firstPoint = true;
+
+                for (int i = 0; i < sensorValues.size(); i++) {
+                    float x = margin + (i * chartWidth / (float)(sensorValues.size() - 1));
+                    float y = height - margin - ((sensorValues.get(i) - minValue) / valueRange * chartHeight);
+
+                    if (firstPoint) {
+                        path.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        path.lineTo(x, y);
+                    }
+
+                    // Dibujar punto
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(x, y, 4f, paint);
+                    paint.setStyle(Paint.Style.STROKE);
+                }
+
+                canvas.drawPath(path, paint);
+            } else if (sensorValues.size() == 1) {
+                // Si solo hay un punto, dibujarlo en el centro
+                float x = width / 2f;
+                float y = height / 2f;
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(x, y, 6f, paint);
+            }
+
+            // Dibujar etiquetas del eje Y (valores del sensor)
+            // Eje Y (valores numéricos)
+            paint.setTextSize(14f); // antes: 11f
+            paint.setColor(Color.BLACK);
+            paint.setTextAlign(Paint.Align.RIGHT);
+            for (int i = 0; i <= 5; i++) {
+                float value = minValue + (valueRange * i / 5f);
+                float y = height - margin - (i * chartHeight / 5f);
+                canvas.drawText(String.format("%.1f%s", value, unit), margin - 15, y + 5, paint); // más espacio
+            }
+
+
+            paint.setTextSize(14f); // antes: 11f
+            paint.setTextAlign(Paint.Align.CENTER);
+            int labelStep = Math.max(1, timeLabels.size() / 6); // limita a 6 etiquetas visibles
+
+            for (int i = 0; i < timeLabels.size(); i += labelStep) {
+                if (sensorValues.size() > 1) {
+                    float x = margin + (i * chartWidth / (float)(sensorValues.size() - 1));
+                    canvas.drawText(timeLabels.get(i), x, height - margin + 30, paint); // más abajo
+                }
+            }
+
+
+            paint.setTextSize(13f); // más grande
+            paint.setTextAlign(Paint.Align.LEFT);
+            canvas.drawText(String.format("Min: %.2f%s", minValue, unit), 20, height - 60, paint);
+            canvas.drawText(String.format("Max: %.2f%s", maxValue, unit), 20, height - 40, paint);
+            canvas.drawText(String.format("Puntos: %d", sensorValues.size()), 20, height - 20, paint);
+
+
+            return bitmap;
+
+        } catch (Exception e) {
+            Log.e("PDFGenerator", "Error al generar gráfico para " + sensorType + ": " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // Método para obtener el valor del sensor según el tipo
+    private Double getSensorValue(Sensor sensor, String sensorType) {
+        switch (sensorType.toLowerCase()) {
+            case "temperatura":
+                return sensor.getTemperatura();
+            case "humedad":
+                return sensor.getHumedad();
+            case "humedadsuelo":
+                return sensor.getHumedadSuelo();
+            case "gas":
+                return sensor.getGas();
+            case "presionatmosferica":
+                return sensor.getPresionAtmosferica();
+            case "luz":
+                return sensor.getLuz();
+            case "viento":
+                return sensor.getViento();
+            case "humo":
+                return sensor.getHumo();
+            case "lluvia":
+                return sensor.getLluvia();
+            default:
+                return null;
+        }
+    }
+
+    private String getUnitForSensor(String sensorType) {
+        switch (sensorType.toLowerCase()) {
+            case "temperatura":
+                return "°C";
+            case "humedad":
+                return "%";
+            case "humedadsuelo":
+                return "";
+            case "gas":
+                return " ppm";
+            case "presionatmosferica":
+                return " hPa";
+            case "luz":
+                return " lux";
+            case "viento":
+                return " m/s";
+            case "humo":
+                return "";
+            case "lluvia":
+                return "";
+            default:
+                return "";
+        }
+    }
+
+    private int getColorForSensor(String sensorType) {
+        switch (sensorType.toLowerCase()) {
+            case "temperatura":
+                return Color.RED;
+            case "humedad":
+                return Color.BLUE;
+            case "humedadsuelo":
+                return Color.rgb(139, 69, 19); // Brown
+            case "gas":
+                return Color.rgb(255, 165, 0); // Orange
+            case "presionatmosferica":
+                return Color.rgb(128, 0, 128); // Purple
+            case "luz":
+                return Color.YELLOW;
+            case "viento":
+                return Color.CYAN;
+            case "humo":
+                return Color.GRAY;
+            case "lluvia":
+                return Color.rgb(0, 191, 255); // Deep Sky Blue
+            default:
+                return Color.BLACK;
+        }
+    }
 
     private Bitmap generateChartAlternative(List<Sensor> sensorList) {
         try {
@@ -287,7 +494,7 @@ public class PDFGenerator {
             paint.setTextSize(20f);
             paint.setColor(Color.BLACK);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("Temperatura vs. Tiempo", width / 2f, 40f, paint);
+            canvas.drawText("Temperatura", width / 2f, 40f, paint);
 
             // Dibujar ejes
             paint.setColor(Color.GRAY);
@@ -351,6 +558,75 @@ public class PDFGenerator {
         }
     }
 
+    private void addAllChartsToDocument(Document document, List<Sensor> sensorList) throws IOException, DocumentException {
+        // Agregar nueva página para los gráficos
+        document.newPage();
+
+        // Título de la sección de gráficos
+        Paragraph sectionTitle = new Paragraph("\nGráficos de Monitoreo de Sensores\n\n");
+        sectionTitle.setAlignment(Element.ALIGN_CENTER);
+        document.add(sectionTitle);
+
+        // Generar y agregar cada gráfico
+        String[] sensorTypes = {"temperatura", "humedad", "humedadSuelo", "gas", "presionAtmosferica", "luz", "viento"};
+        String[] chartTitles = {
+                "Temperatura (°C)",
+                "Humedad (%)",
+                "Humedad del Suelo",
+                "Niveles de Gas",
+                "Presión Atmosférica (hPa)",
+                "Niveles de Luz",
+                "Velocidad del Viento"
+        };
+
+        for (int i = 0; i < sensorTypes.length; i++) {
+            Bitmap chartBitmap = generateSensorChart(sensorList, sensorTypes[i], chartTitles[i]);
+            if (chartBitmap != null) {
+                addChartToDocument(document, chartBitmap, chartTitles[i]);
+                // Agregar espacio entre gráficos
+                document.add(new Paragraph("\n"));
+            }
+        }
+    }
+
+    // Método mejorado para agregar un gráfico específico al documento
+    private void addChartToDocument(Document document, Bitmap chartBitmap, String title) throws IOException, DocumentException {
+        if (chartBitmap == null) {
+            Log.w("PDFGenerator", "No se pudo generar el gráfico: " + title);
+            return;
+        }
+
+        try {
+            // Comprimir bitmap a PNG
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            chartBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            // Crear imagen para el PDF
+            Image chartImage = Image.getInstance(stream.toByteArray());
+
+            // Escalar imagen para que quepa bien en el PDF
+            chartImage.scaleToFit(500, 300);
+            chartImage.setAlignment(Element.ALIGN_CENTER);
+
+            // Agregar título del gráfico
+            Paragraph chartTitle = new Paragraph(title);
+            chartTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(chartTitle);
+
+            // Agregar la imagen
+            document.add(chartImage);
+
+            // Cerrar el stream
+            stream.close();
+
+            Log.d("PDFGenerator", "Gráfico agregado exitosamente: " + title);
+
+        } catch (Exception e) {
+            Log.e("PDFGenerator", "Error al agregar gráfico al documento: " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
     private void addTitle(Document document) throws DocumentException {
         Paragraph title = new Paragraph("Reporte de Datos de Sensores");
         title.setAlignment(Element.ALIGN_CENTER);
@@ -395,7 +671,7 @@ public class PDFGenerator {
         }
     }
 
-    private void addChartToDocument(Document document, Bitmap chartBitmap) throws IOException, DocumentException {
+    /*private void addChartToDocument(Document document, Bitmap chartBitmap) throws IOException, DocumentException {
         if (chartBitmap == null) {
             Log.w("PDFGenerator", "No se pudo generar el gráfico, omitiendo...");
             return;
@@ -433,7 +709,7 @@ public class PDFGenerator {
             Log.e("PDFGenerator", "Error al agregar gráfico al documento: " + e.getMessage(), e);
             throw e;
         }
-    }
+    }*/
 
 
 
