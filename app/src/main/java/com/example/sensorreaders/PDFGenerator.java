@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
@@ -336,7 +337,9 @@ public class PDFGenerator {
             // Eje Y (valores numéricos)
             paint.setTextSize(14f); // antes: 11f
             paint.setColor(Color.BLACK);
+            paint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL));
             paint.setTextAlign(Paint.Align.RIGHT);
+            paint.setStyle(Paint.Style.FILL);
             for (int i = 0; i <= 5; i++) {
                 float value = minValue + (valueRange * i / 5f);
                 float y = height - margin - (i * chartHeight / 5f);
@@ -346,6 +349,8 @@ public class PDFGenerator {
 
             paint.setTextSize(14f); // antes: 11f
             paint.setTextAlign(Paint.Align.CENTER);
+            paint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL));
+            paint.setStyle(Paint.Style.FILL);
             int labelStep = Math.max(1, timeLabels.size() / 6); // limita a 6 etiquetas visibles
 
             for (int i = 0; i < timeLabels.size(); i += labelStep) {
@@ -358,6 +363,8 @@ public class PDFGenerator {
 
             paint.setTextSize(13f); // más grande
             paint.setTextAlign(Paint.Align.LEFT);
+            paint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL));
+            paint.setStyle(Paint.Style.FILL);
             canvas.drawText(String.format("Min: %.2f%s", minValue, unit), 20, height - 60, paint);
             canvas.drawText(String.format("Max: %.2f%s", maxValue, unit), 20, height - 40, paint);
             canvas.drawText(String.format("Puntos: %d", sensorValues.size()), 20, height - 20, paint);
