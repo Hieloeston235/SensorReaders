@@ -3,9 +3,13 @@ package com.example.sensorreaders;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
@@ -16,9 +20,12 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 
 import com.example.sensorreaders.Models.Sensor;
+import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -31,13 +38,23 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+
 
 public class PDFGenerator {
 
@@ -74,6 +91,14 @@ public class PDFGenerator {
             addTitle(document);
             addMetadata(document);
             addSensorDataTable(document, sensorList);
+
+            // 🔽 Agrega aquí el gráfico después de la tabla
+            Bitmap chartBitmap = generateChart(sensorList);
+            if (chartBitmap != null) {
+                addChartToDocument(document, chartBitmap);
+            }
+
+
             document.close();
 
             Toast.makeText(context, "PDF generado en:\n" + file.getPath(), Toast.LENGTH_LONG).show();
@@ -86,6 +111,62 @@ public class PDFGenerator {
             return false;
         }
     }
+
+    private Bitmap generateChart(List<Sensor> sensorList) {
+        Context chartContext = context.getApplicationContext();
+
+        LineChart lineChart = new LineChart(chartContext);
+        lineChart.setLayoutParams(new ViewGroup.LayoutParams(800, 600)); // Tamaño del gráfico
+
+        List<Entry> entries = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        int index = 0;
+        for (Sensor sensor : sensorList) {
+            if (sensor.getFecha() > 0 && sensor.getTemperatura() != null) {
+                entries.add(new Entry(index, sensor.getTemperatura().floatValue()));
+                labels.add(sdf.format(new Date(sensor.getFecha())));
+                index++;
+            }
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Temperatura (°C)");
+        dataSet.setColor(Color.BLUE);
+        dataSet.setValueTextColor(Color.BLACK);
+        dataSet.setLineWidth(2f);
+        dataSet.setCircleRadius(3f);
+        dataSet.setDrawCircles(true);
+        dataSet.setDrawValues(false);
+
+        LineData lineData = new LineData(dataSet);
+        lineChart.setData(lineData);
+
+        lineChart.getDescription().setText("Temperatura vs. Tiempo");
+        lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        lineChart.getXAxis().setGranularity(1f);
+        lineChart.getXAxis().setLabelCount(labels.size(), true);
+        lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                int i = (int) value;
+                return i >= 0 && i < labels.size() ? labels.get(i) : "";
+            }
+        });
+
+
+        lineChart.invalidate(); // Actualiza visualmente
+
+        // Renderizar a Bitmap
+        lineChart.measure(
+                View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY)
+        );
+        lineChart.layout(0, 0, 800, 600);
+        return lineChart.getChartBitmap();
+    }
+
+
 
     private void addTitle(Document document) throws DocumentException {
         Paragraph title = new Paragraph("Reporte de Datos de Sensores");
@@ -117,17 +198,31 @@ public class PDFGenerator {
         document.add(table);
     }
 
+
     private void addTableHeader(PdfPTable table) {
-        String[] headers = {
-                "ID", "Gas", "Humedad", "Humedad Suelo", "Humo",
-                "Lluvia","Luz" ,"Presión Atmosf.", "Temperatura", "Viento", "Fecha/Hora"
-        };
+        String[] headers = { "ID", "Gas", "Humedad", "Humedad Suelo", "Humo", "Lluvia", "Luz", "Presión Atmosf.", "Temperatura", "Viento", "Fecha/Hora" };
+        Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+        BaseColor headerColor = BaseColor.DARK_GRAY;
 
         for (String header : headers) {
-            PdfPCell cell = new PdfPCell(new Phrase(header));
+            PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+            cell.setBackgroundColor(headerColor);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(cell);
         }
     }
+
+    private void addChartToDocument(Document document, Bitmap chartBitmap) throws IOException, DocumentException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        chartBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        Image chartImage = Image.getInstance(stream.toByteArray());
+        chartImage.scaleToFit(500, 300);
+        chartImage.setAlignment(Element.ALIGN_CENTER);
+        document.add(new Paragraph("\nGráfico de Temperaturas:\n"));
+        document.add(chartImage);
+    }
+
+
 
     private void addSensorRow(PdfPTable table, Sensor sensor) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
