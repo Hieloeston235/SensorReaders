@@ -8,19 +8,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
 import java.lang.reflect.Type;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 public class SensorDeserializer implements JsonDeserializer<Sensor> {
-
-    private static final SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault());
-
     @Override
     public Sensor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject obj = json.getAsJsonObject();
-
         Sensor sensor = new Sensor();
+
         sensor.setId(obj.get("id").getAsInt());
         sensor.setTemperatura(obj.get("temperatura").getAsDouble());
         sensor.setHumedad(obj.get("humedad").getAsDouble());
@@ -32,14 +30,18 @@ public class SensorDeserializer implements JsonDeserializer<Sensor> {
         sensor.setHumo(obj.get("humo").getAsDouble());
         sensor.setHumedadSuelo(obj.get("humedadSuelo").getAsDouble());
 
+        // Convertir fecha en formato ISO8601 a timestamp
+        String fechaString = obj.get("fecha").getAsString();
         try {
-            String fechaStr = obj.get("fecha").getAsString();
-            Date date = isoFormat.parse(fechaStr);
-            sensor.setFecha(date.getTime()); // Guardamos como long
-        } catch (Exception e) {
-            sensor.setFecha(System.currentTimeMillis()); // fallback
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault());
+            Date date = sdf.parse(fechaString);
+            sensor.setFecha(date.getTime()); // ✅ Aquí se guarda la fecha REAL
+        } catch (ParseException e) {
+            e.printStackTrace();
+            sensor.setFecha(System.currentTimeMillis()); // fallback si falla
         }
 
         return sensor;
     }
 }
+

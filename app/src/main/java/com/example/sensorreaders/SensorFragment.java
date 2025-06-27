@@ -48,7 +48,7 @@ public class SensorFragment extends Fragment {
         pdfGenerator = new PDFGenerator(getContext());
 
         viewModels = new SensorViewModel(getActivity().getApplication());
-
+        viewModels.startFirebase();
         listaSensores = viewModels.getSensorList();
 
         tvTemperatura = view.findViewById(R.id.tvTemperatura);

@@ -16,7 +16,7 @@ public abstract class  database extends RoomDatabase {
     private static database INSTANCE;
     public static synchronized database getInstance(Context context){
         if (INSTANCE == null){
-            INSTANCE = Room.databaseBuilder(context, database.class, "ClimaApp").fallbackToDestructiveMigration().build();
+            INSTANCE = Room.databaseBuilder(context, database.class, "ClimaApp2").fallbackToDestructiveMigration().build();
         }
         return INSTANCE;
     }

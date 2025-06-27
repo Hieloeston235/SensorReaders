@@ -58,8 +58,13 @@ public class SensorRepository {
         //syncWithApi();
         firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
 
+        //starFirebaseSync();
+    }
+
+    public void enableFirebaseSync() {
         starFirebaseSync();
     }
+
     private void syncWithApi() {
         apiService.getSensores().enqueue(new Callback<List<Sensor>>() {
             @Override
@@ -143,6 +148,35 @@ public class SensorRepository {
 
 
     }
+
+    public void fetchAllFromApi() {
+        apiService.getSensores().enqueue(new Callback<List<Sensor>>() {
+            @Override
+            public void onResponse(Call<List<Sensor>> call, Response<List<Sensor>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Sensor> apiSensors = response.body();
+                    executorService.execute(() -> {
+                        for (Sensor sensor : apiSensors) {
+                            if (sensor.getId() != 0) {
+                                sensoresDao.update(sensor);
+                            } else {
+                                sensoresDao.insert(sensor);
+                            }
+                        }
+                    });
+                } else {
+                    Log.e("API", "Error en respuesta: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Sensor>> call, Throwable t) {
+                Log.e("API", "Fallo en fetchAllFromApi: " + t.getMessage());
+            }
+        });
+    }
+
+
     public LiveData<List<Sensor>> getList(){
         return list;
     }

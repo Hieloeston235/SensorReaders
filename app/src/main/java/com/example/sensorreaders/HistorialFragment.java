@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,11 +24,16 @@ import com.example.sensorreaders.Models.Sensor;
 import com.example.sensorreaders.ViewModel.SensorViewModel;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HistorialFragment extends Fragment {
 
@@ -41,6 +47,9 @@ public class HistorialFragment extends Fragment {
     private Date fechaInicio, fechaFin;
     private SensorAdapter adapter;
     private SimpleDateFormat dateFormat;
+
+    private List<Sensor> listaDesdeApi = new ArrayList<>();
+
 
     public HistorialFragment() {}
 
@@ -86,15 +95,29 @@ public class HistorialFragment extends Fragment {
 
     private void setupViewModelAndRecyclerView() {
         pdfGenerator = new PDFGenerator(getContext());
-        viewModel = new SensorViewModel(getActivity().getApplication());
-        viewModel.refreshFROMApi();
+        viewModel = new ViewModelProvider(this).get(SensorViewModel.class);
+
+        viewModel.getDataSensorFromDB();
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SensorAdapter();
         recyclerViewHistorial.setAdapter(adapter);
 
-        viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
-            aplicarFiltroYMostrar(sensores);
+        viewModel.fetchSensorsDirectly(new Callback<List<Sensor>>() {
+            @Override
+            public void onResponse(Call<List<Sensor>> call, Response<List<Sensor>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listaDesdeApi = response.body();
+                    aplicarFiltroYMostrar(listaDesdeApi);
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Sensor>> call, Throwable t) {
+                Toast.makeText(getContext(), "Error al obtener datos de la API", Toast.LENGTH_SHORT).show();
+            }
         });
+
     }
 
     private void setupClickListeners() {
@@ -195,7 +218,8 @@ public class HistorialFragment extends Fragment {
         Calendar cal = Calendar.getInstance();
         fechaInicio = inicioDelDia(cal.getTime());
         fechaFin = finDelDia(cal.getTime());
-        aplicarFiltroYMostrar(viewModel.getSensorList().getValue());
+        aplicarFiltroYMostrar(listaDesdeApi);
+
         actualizarTextoFechas();
     }
 
@@ -204,7 +228,8 @@ public class HistorialFragment extends Fragment {
         cal.add(Calendar.DAY_OF_YEAR, -1);
         fechaInicio = inicioDelDia(cal.getTime());
         fechaFin = finDelDia(cal.getTime());
-        aplicarFiltroYMostrar(viewModel.getSensorList().getValue());
+        aplicarFiltroYMostrar(listaDesdeApi);
+
         actualizarTextoFechas();
     }
 
@@ -213,7 +238,8 @@ public class HistorialFragment extends Fragment {
         calInicio.add(Calendar.DAY_OF_YEAR, -6);
         fechaInicio = inicioDelDia(calInicio.getTime());
         fechaFin = finDelDia(new Date());
-        aplicarFiltroYMostrar(viewModel.getSensorList().getValue());
+        aplicarFiltroYMostrar(listaDesdeApi);
+
         actualizarTextoFechas();
     }
 
