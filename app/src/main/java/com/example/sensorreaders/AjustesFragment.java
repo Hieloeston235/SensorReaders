@@ -455,7 +455,7 @@ public class AjustesFragment extends Fragment {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("✏️ Editar Perfil");
+        builder.setTitle(" Editar Perfil");
         builder.setView(dialogView);
 
         builder.setPositiveButton("Guardar", null);
@@ -572,7 +572,7 @@ public class AjustesFragment extends Fragment {
         TextInputEditText confirmPasswordEdit = dialogView.findViewById(R.id.confirmPasswordEdit);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("🔐 Cambiar Contraseña");
+        builder.setTitle(" Cambiar Contraseña");
         builder.setView(dialogView);
 
         builder.setPositiveButton("Cambiar", null);
