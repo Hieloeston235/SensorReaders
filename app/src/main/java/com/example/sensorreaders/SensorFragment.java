@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class SensorFragment extends Fragment {
+    //
 
     private TextView tvTemperatura, tvHumedad, tvPresion, tvViento, tvLuz, tvLluvia, tvGas, tvHumo, tvHumedadSuelo;
     private TextView tvEstadoConexion, tvFechaActual;
