@@ -25,7 +25,7 @@
             android:paddingBottom="16dp"
             android:textColor="@color/white" />
 
-        <!-- Filtros de Fecha y Hora - Con fondo sólido -->
+        <!-- Filtros de Fecha - Con fondo sólido -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,13 +43,12 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Filtros de Fecha y Hora"
+                    android:text="Filtros de Fecha"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Filtros de fecha predefinidos -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -91,28 +90,12 @@
 
                 </LinearLayout>
 
-                <!-- Línea divisoria -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_color"
-                    android:layout_marginVertical="16dp" />
-
-                <!-- Subtítulo para filtros personalizados -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Filtros Personalizados"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginBottom="12dp" />
-
                 <!-- Filtros de fecha personalizados -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp">
 
                     <Button
                         android:id="@+id/btnGraficaFechaInicio"
@@ -141,148 +124,6 @@
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
-
-                <!-- Filtros de hora -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="12dp">
-
-                    <Button
-                        android:id="@+id/btnGraficaHoraInicio"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="🕐 Hora Inicio"
-                        android:layout_marginEnd="8dp"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/button_outline"
-                        android:textColor="@color/primary_color"
-                        app:cornerRadius="8dp" />
-
-                    <Button
-                        android:id="@+id/btnGraficaHoraFin"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="🕐 Hora Fin"
-                        android:layout_marginStart="8dp"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/button_outline"
-                        android:textColor="@color/primary_color"
-                        app:cornerRadius="8dp" />
-
-                </LinearLayout>
-
-                <!-- Filtros de tiempo predefinidos por horas -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Rangos de Tiempo Rápidos"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btnUltimas3Horas"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="3h"
-                        android:layout_marginEnd="3dp"
-                        android:textSize="12sp"
-                        android:enabled="false"
-                        android:backgroundTint="@color/button_disabled"
-                        android:textColor="@color/text_disabled"
-                        app:cornerRadius="6dp" />
-
-                    <Button
-                        android:id="@+id/btnUltimas6Horas"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="6h"
-                        android:layout_marginHorizontal="3dp"
-                        android:textSize="12sp"
-                        android:enabled="false"
-                        android:backgroundTint="@color/button_disabled"
-                        android:textColor="@color/text_disabled"
-                        app:cornerRadius="6dp" />
-
-                    <Button
-                        android:id="@+id/btnUltimas12Horas"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="12h"
-                        android:layout_marginHorizontal="3dp"
-                        android:textSize="12sp"
-                        android:enabled="false"
-                        android:backgroundTint="@color/button_disabled"
-                        android:textColor="@color/text_disabled"
-                        app:cornerRadius="6dp" />
-
-                    <Button
-                        android:id="@+id/btnUltimas24Horas"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="24h"
-                        android:layout_marginStart="3dp"
-                        android:textSize="12sp"
-                        android:enabled="false"
-                        android:backgroundTint="@color/button_disabled"
-                        android:textColor="@color/text_disabled"
-                        app:cornerRadius="6dp" />
-
-                </LinearLayout>
-
-                <!-- Switch para habilitar filtros de hora -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Filtrar por horas específicas"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary" />
-
-                    <Switch
-                        android:id="@+id/switchFiltroHoras"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="false" />
-
-                </LinearLayout>
-
-                <!-- Información de rango seleccionado -->
-                <TextView
-                    android:id="@+id/tvRangoSeleccionado"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Rango: No seleccionado"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary"
-                    android:background="@drawable/rounded_background_light"
-                    android:padding="8dp"
-                    android:layout_marginTop="8dp" />
 
                 <Button
                     android:id="@+id/btnAplicarFiltroGrafica"
@@ -373,33 +214,16 @@
                     android:paddingVertical="4dp"
                     android:textSize="15sp" />
 
-
-                <CheckBox
-                    android:id="@+id/cbHumo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="🔥 Humo"
-                    android:paddingVertical="4dp"
-                    android:textSize="15sp" />
-
-                <CheckBox
-                    android:id="@+id/cbGas"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="💨 Gas"
-                    android:paddingVertical="4dp"
-                    android:textSize="15sp" />
-
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Boton generar grafica -->
+        <!-- Botón para generar gráfica -->
         <Button
             android:id="@+id/btnGenerarGrafica"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="📊 Generar Grafica"
+            android:text="📊 Generar Gráfica"
             android:layout_marginBottom="16dp"
             android:backgroundTint="@android:color/holo_blue_dark"
             android:textColor="@android:color/white"
@@ -426,35 +250,21 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary"
                 android:padding="12dp" />
+
         </androidx.cardview.widget.CardView>
 
-        <!-- Contenedor de la grafica  -->
+        <!-- Contenedor de la gráfica -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardGrafica"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="400dp"
             android:layout_marginBottom="16dp"
             android:visibility="gone"
             app:cardCornerRadius="12dp"
             app:cardElevation="6dp"
             app:cardBackgroundColor="@android:color/white">
 
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="8dp">
-
-                <!-- TextView para cuando no hay datos -->
-                <TextView
-                    android:id="@+id/tvEmptyChart"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:text="No hay datos para mostrar"
-                    android:textColor="@color/text_secondary"
-                    android:visibility="gone" />
-            </RelativeLayout>
+            <!-- VACÍO - El LineChart se agrega programáticamente desde Java -->
 
         </androidx.cardview.widget.CardView>
 
@@ -493,15 +303,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selecciona un rango de fechas/horas y variables para generar la grafica"
+                    android:text="Selecciona un rango de fechas y variables para generar la gráfica"
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary"
                     android:textAlignment="center"
                     android:layout_marginHorizontal="16dp" />
+
             </LinearLayout>
+
         </androidx.cardview.widget.CardView>
 
-        <!-- Estadisticas del Periodo -->
+        <!-- Estadísticas del Período -->
         <androidx.cardview.widget.CardView
             android:id="@+id/layoutEstadisticas"
             android:layout_width="match_parent"
@@ -520,7 +332,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Estadisticas del Periodo"
+                    android:text="Estadísticas del Período"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:paddingBottom="8dp"
@@ -532,7 +344,11 @@
                     android:layout_height="wrap_content"
                     android:textSize="14sp"
                     android:textColor="@color/text_primary" />
+
             </LinearLayout>
+
         </androidx.cardview.widget.CardView>
+
     </LinearLayout>
+
 </ScrollView>

@@ -7,11 +7,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,17 +26,13 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
-import android.content.Context;
-import android.content.SharedPreferences;
 
 public class AjustesFragment extends Fragment {
 
     private TextView tvNombreUsuario, tvEmailUsuario;
     private Switch switchNotificaciones, switchActualizacion;
-    private LinearLayout layoutCambiarPassword, layoutEditarPerfil, layoutCerrarSesion, layoutAcercaDe, layoutNotificaciones;
+    private LinearLayout layoutCambiarPassword, layoutEditarPerfil, layoutCerrarSesion, layoutAcercaDe;
     private FirebaseAuth mAuth;
-    private boolean isNotificationDialogOpen = false;
-    private boolean notificationsEnabled = false;
 
     public AjustesFragment() {
         // Required empty public constructor
@@ -55,8 +47,6 @@ public class AjustesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
-        SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
-        notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
     }
 
     @Override
@@ -73,23 +63,13 @@ public class AjustesFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        // InformaciOn del usuario
+        // Información del usuario
         tvNombreUsuario = view.findViewById(R.id.tvNombreUsuario);
         tvEmailUsuario = view.findViewById(R.id.tvEmailUsuario);
 
-        // Switches de configuracion
+        // Switches de configuración
         switchNotificaciones = view.findViewById(R.id.switchNotificaciones);
         switchActualizacion = view.findViewById(R.id.switchActualizacion);
-
-        // Cargar estado guardado de las notificaciones
-        SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
-        notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
-        switchNotificaciones.setChecked(notificationsEnabled);
-
-        // Establecer switch de actualizacion en OFF por defecto
-        switchActualizacion.setChecked(false);
-
-        layoutNotificaciones = view.findViewById(R.id.layoutNotificaciones);
 
         // Opciones de cuenta
         layoutCambiarPassword = view.findViewById(R.id.layoutCambiarPassword);
@@ -100,20 +80,10 @@ public class AjustesFragment extends Fragment {
         layoutAcercaDe = view.findViewById(R.id.layoutAcercaDe);
     }
 
-    // Metodo para guardar el estado del switch de notificaciones
-    private void saveNotificationState(boolean enabled) {
-        notificationsEnabled = enabled;
-        SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("notifications_enabled", enabled);
-        editor.apply();
-        switchNotificaciones.setChecked(enabled); // Sincronizar el estado del switch
-    }
-
     private void setupUserInfo() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            // Mostrar informacion del usuario
+            // Mostrar información del usuario
             if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
                 tvNombreUsuario.setText(currentUser.getDisplayName());
             } else {
@@ -139,7 +109,7 @@ public class AjustesFragment extends Fragment {
             showEditProfileDialog();
         });
 
-        // Listener para cerrar sesion
+        // Listener para cerrar sesión
         layoutCerrarSesion.setOnClickListener(v -> {
             showLogoutDialog();
         });
@@ -149,298 +119,18 @@ public class AjustesFragment extends Fragment {
             showAboutDialog();
         });
 
-        // Listener para el layout de notificaciones
-        layoutNotificaciones.setOnClickListener(v -> {
-            if (switchNotificaciones.isChecked()) {
-                // Si el switch esta activo, mostrar el dislogo directamente
-                showNotificationSettingsDialog();
-            }
-        });
-
-        // Logica para el switch de notificaciones
+        // Listeners para los switches (funcionalidad básica)
         switchNotificaciones.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isNotificationDialogOpen) {
-                // Si el dialogo esta abierto, ignorar cambios del switch
-                return;
-            }
-
-            if (isChecked) {
-                // Si se activa el switch abrir el dialogo de configuracion
-                notificationsEnabled = true;
-                showNotificationSettingsDialog();
-            } else {
-                // Si se desactiva el switch solo cambiar el estado
-                notificationsEnabled = false;
-                saveNotificationState(false);
-                Toast.makeText(getContext(), "Notificaciones desactivadas", Toast.LENGTH_SHORT).show();
-            }
+            String message = isChecked ? "Notificaciones activadas" : "Notificaciones desactivadas";
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         });
 
         switchActualizacion.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            String message = isChecked ? "Actualizacion automática activada" : "Actualizacion automatica desactivada";
+            String message = isChecked ? "Actualización automática activada" : "Actualización automática desactivada";
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         });
+
     }
-
-    private void showNotificationSettingsDialog() {
-        isNotificationDialogOpen = true; // Marcar que el dialogo esta abierto
-        saveNotificationState(true); // Guardar que las notificaciones están activas
-
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_notification_settings, null);
-
-        // Referencias a todos los elementos del dialog
-        ImageButton btnCerrarAlertas = dialogView.findViewById(R.id.btnCerrarAlertas);
-
-        // SeekBars de Temperatura
-        SeekBar seekBarTempMin = dialogView.findViewById(R.id.seekBarTempMin);
-        SeekBar seekBarTempMax = dialogView.findViewById(R.id.seekBarTempMax);
-        TextView tvTempMinValue = dialogView.findViewById(R.id.tvTempMinValue);
-        TextView tvTempMaxValue = dialogView.findViewById(R.id.tvTempMaxValue);
-
-        // SeekBars de Humedad
-        SeekBar seekBarHumedadMin = dialogView.findViewById(R.id.seekBarHumedadMin);
-        SeekBar seekBarHumedadMax = dialogView.findViewById(R.id.seekBarHumedadMax);
-        TextView tvHumedadMinValue = dialogView.findViewById(R.id.tvHumedadMinValue);
-        TextView tvHumedadMaxValue = dialogView.findViewById(R.id.tvHumedadMaxValue);
-
-        // SeekBars de Presion
-        SeekBar seekBarPresionMin = dialogView.findViewById(R.id.seekBarPresionMin);
-        SeekBar seekBarPresionMax = dialogView.findViewById(R.id.seekBarPresionMax);
-        TextView tvPresionMinValue = dialogView.findViewById(R.id.tvPresionMinValue);
-        TextView tvPresionMaxValue = dialogView.findViewById(R.id.tvPresionMaxValue);
-
-        // SeekBar de Viento
-        SeekBar seekBarVientoMax = dialogView.findViewById(R.id.seekBarVientoMax);
-        TextView tvVientoMaxValue = dialogView.findViewById(R.id.tvVientoMaxValue);
-
-        // SeekBars de Luz
-        SeekBar seekBarLuzMin = dialogView.findViewById(R.id.seekBarLuzMin);
-        SeekBar seekBarLuzMax = dialogView.findViewById(R.id.seekBarLuzMax);
-        TextView tvLuzMinValue = dialogView.findViewById(R.id.tvLuzMinValue);
-        TextView tvLuzMaxValue = dialogView.findViewById(R.id.tvLuzMaxValue);
-
-        // CheckBox de Lluvia
-        CheckBox checkBoxLluvia = dialogView.findViewById(R.id.checkBoxLluvia);
-
-        // SeekBar de Gas
-        SeekBar seekBarGasMax = dialogView.findViewById(R.id.seekBarGasMax);
-        TextView tvGasMaxValue = dialogView.findViewById(R.id.tvGasMaxValue);
-
-        // SeekBar de Humo
-        SeekBar seekBarHumoMax = dialogView.findViewById(R.id.seekBarHumoMax);
-        TextView tvHumoMaxValue = dialogView.findViewById(R.id.tvHumoMaxValue);
-
-        // SeekBars de Humedad del Suelo
-        SeekBar seekBarHumedadSueloMin = dialogView.findViewById(R.id.seekBarHumedadSueloMin);
-        SeekBar seekBarHumedadSueloMax = dialogView.findViewById(R.id.seekBarHumedadSueloMax);
-        TextView tvHumedadSueloMinValue = dialogView.findViewById(R.id.tvHumedadSueloMinValue);
-        TextView tvHumedadSueloMaxValue = dialogView.findViewById(R.id.tvHumedadSueloMaxValue);
-
-        // Botones
-        Button btnGuardarAlertas = dialogView.findViewById(R.id.btnGuardarAlertas);
-        Button btnRestablecerAlertas = dialogView.findViewById(R.id.btnRestablecerAlertas);
-
-        // Cargar configuración actual
-        loadCurrentNotificationSettings(seekBarTempMin, seekBarTempMax, seekBarHumedadMin, seekBarHumedadMax,
-                seekBarPresionMin, seekBarPresionMax, seekBarVientoMax, seekBarLuzMin,
-                seekBarLuzMax, checkBoxLluvia, seekBarGasMax, seekBarHumoMax,
-                seekBarHumedadSueloMin, seekBarHumedadSueloMax);
-
-        // Configurar listeners para todos los SeekBars
-        setupSeekBarListeners(seekBarTempMin, tvTempMinValue, "°C", 0);
-        setupSeekBarListeners(seekBarTempMax, tvTempMaxValue, "°C", 0);
-        setupSeekBarListeners(seekBarHumedadMin, tvHumedadMinValue, "%", 0);
-        setupSeekBarListeners(seekBarHumedadMax, tvHumedadMaxValue, "%", 0);
-        setupSeekBarListeners(seekBarPresionMin, tvPresionMinValue, " hPa", 500);
-        setupSeekBarListeners(seekBarPresionMax, tvPresionMaxValue, " hPa", 500);
-        setupSeekBarListeners(seekBarVientoMax, tvVientoMaxValue, " km/h", 0);
-        setupSeekBarListeners(seekBarLuzMin, tvLuzMinValue, " lux", 0);
-        setupSeekBarListeners(seekBarLuzMax, tvLuzMaxValue, " lux", 0);
-        setupSeekBarListeners(seekBarGasMax, tvGasMaxValue, " ppm", 0);
-        setupSeekBarListeners(seekBarHumoMax, tvHumoMaxValue, " ppm", 0);
-        setupSeekBarListeners(seekBarHumedadSueloMin, tvHumedadSueloMinValue, "%", 0);
-        setupSeekBarListeners(seekBarHumedadSueloMax, tvHumedadSueloMaxValue, "%", 0);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setView(dialogView);
-        builder.setCancelable(false); // No se puede cerrar tocando fuera
-
-        AlertDialog dialog = builder.create();
-
-        // Listener para el boton cerrar (X) - MANTENER SWITCH ACTIVO
-        btnCerrarAlertas.setOnClickListener(v -> {
-            isNotificationDialogOpen = false; // Marcar que el dialogo se cerro
-            // NO cambiar el estado del switch aqui
-            dialog.dismiss();
-        });
-
-        // Listener para el botón Guardar
-        btnGuardarAlertas.setOnClickListener(v -> {
-            // Guardar todas las configuraciones
-            saveNotificationSettings(
-                    seekBarTempMin.getProgress(),
-                    seekBarTempMax.getProgress(),
-                    seekBarHumedadMin.getProgress(),
-                    seekBarHumedadMax.getProgress(),
-                    seekBarPresionMin.getProgress() + 500,
-                    seekBarPresionMax.getProgress() + 500,
-                    seekBarVientoMax.getProgress(),
-                    seekBarLuzMin.getProgress(),
-                    seekBarLuzMax.getProgress(),
-                    checkBoxLluvia.isChecked(),
-                    seekBarGasMax.getProgress(),
-                    seekBarHumoMax.getProgress(),
-                    seekBarHumedadSueloMin.getProgress(),
-                    seekBarHumedadSueloMax.getProgress()
-            );
-
-            isNotificationDialogOpen = false; // Marcar que el dialogo se cerro
-            Toast.makeText(getContext(), "Configuración de alertas guardada", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        // Listener para el boton Restablecer
-        btnRestablecerAlertas.setOnClickListener(v -> {
-            // Restablecer valores por defecto
-            resetToDefaultValues(seekBarTempMin, seekBarTempMax, seekBarHumedadMin, seekBarHumedadMax,
-                    seekBarPresionMin, seekBarPresionMax, seekBarVientoMax, seekBarLuzMin,
-                    seekBarLuzMax, checkBoxLluvia, seekBarGasMax, seekBarHumoMax,
-                    seekBarHumedadSueloMin, seekBarHumedadSueloMax);
-
-            Toast.makeText(getContext(), "Valores restablecidos por defecto", Toast.LENGTH_SHORT).show();
-        });
-
-        // Manejar botón de atras del sistema - MANTENER SWITCH ACTIVO
-        dialog.setOnCancelListener(dialogInterface -> {
-            isNotificationDialogOpen = false; // Marcar que el dialogo se cerro
-            // NO cambiar el estado del switch aqui
-        });
-
-        // Manejar cuando se cierre el dialogo por cualquier motivo
-        dialog.setOnDismissListener(dialogInterface -> {
-            isNotificationDialogOpen = false; // Marcar que el dialog se cerro
-        });
-
-        dialog.show();
-    }
-
-    // Metodo para cargar la configuracion actual
-    private void loadCurrentNotificationSettings(SeekBar tempMin, SeekBar tempMax, SeekBar humedadMin, SeekBar humedadMax,
-                                                 SeekBar presionMin, SeekBar presionMax, SeekBar vientoMax, SeekBar luzMin,
-                                                 SeekBar luzMax, CheckBox lluvia, SeekBar gasMax, SeekBar humoMax,
-                                                 SeekBar humedadSueloMin, SeekBar humedadSueloMax) {
-
-        SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
-
-        tempMin.setProgress(prefs.getInt("temp_min", 10));
-        tempMax.setProgress(prefs.getInt("temp_max", 35));
-        humedadMin.setProgress(prefs.getInt("humedad_min", 30));
-        humedadMax.setProgress(prefs.getInt("humedad_max", 80));
-        presionMin.setProgress(prefs.getInt("presion_min", 480)); // 980 hPa
-        presionMax.setProgress(prefs.getInt("presion_max", 530)); // 1030 hPa
-        vientoMax.setProgress(prefs.getInt("viento_max", 25));
-        luzMin.setProgress(prefs.getInt("luz_min", 100));
-        luzMax.setProgress(prefs.getInt("luz_max", 800));
-        lluvia.setChecked(prefs.getBoolean("lluvia_enabled", true));
-        gasMax.setProgress(prefs.getInt("gas_max", 500));
-        humoMax.setProgress(prefs.getInt("humo_max", 300));
-        humedadSueloMin.setProgress(prefs.getInt("humedad_suelo_min", 20));
-        humedadSueloMax.setProgress(prefs.getInt("humedad_suelo_max", 85));
-    }
-
-    // Metodo mejorado para guardar configuraciones usando SharedPreferences
-    private void saveNotificationSettings(int tempMin, int tempMax, int humedadMin, int humedadMax,
-                                          int presionMin, int presionMax, int vientoMax, int luzMin,
-                                          int luzMax, boolean lluviaEnabled, int gasMax, int humoMax,
-                                          int humedadSueloMin, int humedadSueloMax) {
-
-        SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        editor.putInt("temp_min", tempMin);
-        editor.putInt("temp_max", tempMax);
-        editor.putInt("humedad_min", humedadMin);
-        editor.putInt("humedad_max", humedadMax);
-        editor.putInt("presion_min", presionMin - 500); // Guardar sin offset
-        editor.putInt("presion_max", presionMax - 500); // Guardar sin offset
-        editor.putInt("viento_max", vientoMax);
-        editor.putInt("luz_min", luzMin);
-        editor.putInt("luz_max", luzMax);
-        editor.putBoolean("lluvia_enabled", lluviaEnabled);
-        editor.putInt("gas_max", gasMax);
-        editor.putInt("humo_max", humoMax);
-        editor.putInt("humedad_suelo_min", humedadSueloMin);
-        editor.putInt("humedad_suelo_max", humedadSueloMax);
-
-        editor.apply();
-    }
-
-    // Metodo para configurar listeners de SeekBar
-    private void setupSeekBarListeners(SeekBar seekBar, TextView textView, String unit, int offset) {
-        // Configurar el valor inicial del TextView
-        int initialValue = seekBar.getProgress() + offset;
-        textView.setText(initialValue + unit);
-
-        // Configurar el listener del SeekBar
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // Actualizar el TextView con el nuevo valor
-                int value = progress + offset;
-                textView.setText(value + unit);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No se necesita implementacion especifica
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No se necesita implementacion especifica
-            }
-        });
-    }
-
-    // Metodo para restablecer valores por defecto
-    private void resetToDefaultValues(SeekBar tempMin, SeekBar tempMax, SeekBar humedadMin, SeekBar humedadMax,
-                                      SeekBar presionMin, SeekBar presionMax, SeekBar vientoMax, SeekBar luzMin,
-                                      SeekBar luzMax, CheckBox lluvia, SeekBar gasMax, SeekBar humoMax,
-                                      SeekBar humedadSueloMin, SeekBar humedadSueloMax) {
-
-        // Valores por defecto para temperatura (°C)
-        tempMin.setProgress(10);
-        tempMax.setProgress(35);
-
-        // Valores por defecto para humedad (%)
-        humedadMin.setProgress(30);
-        humedadMax.setProgress(80);
-
-        // Valores por defecto para presion (hPa) -  tienen offset de 500
-        presionMin.setProgress(480); // 980 hPa
-        presionMax.setProgress(530); // 1030 hPa
-
-        // Valor por defecto para viento (km/h)
-        vientoMax.setProgress(25);
-
-        // Valores por defecto para luz (lux)
-        luzMin.setProgress(100);
-        luzMax.setProgress(800);
-
-        // Valor por defecto para lluvia
-        lluvia.setChecked(true);
-
-        // Valor por defecto para gas (ppm)
-        gasMax.setProgress(500);
-
-        // Valor por defecto para humo (ppm)
-        humoMax.setProgress(300);
-
-        // Valores por defecto para humedad del suelo (%)
-        humedadSueloMin.setProgress(20);
-        humedadSueloMax.setProgress(85);
-    }
-
 
     private void showEditProfileDialog() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_profile, null);
@@ -455,7 +145,7 @@ public class AjustesFragment extends Fragment {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(" Editar Perfil");
+        builder.setTitle("✏️ Editar Perfil");
         builder.setView(dialogView);
 
         builder.setPositiveButton("Guardar", null);
@@ -463,7 +153,7 @@ public class AjustesFragment extends Fragment {
 
         AlertDialog dialog = builder.create();
 
-        // Configurar el boton positivo después de crear el dialogo
+        // Configurar el boton positivo después de crear el diálogo
         dialog.setOnShowListener(dialogInterface -> {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
                 String newName = nameEdit.getText().toString().trim();
@@ -508,7 +198,7 @@ public class AjustesFragment extends Fragment {
             return;
         }
 
-        // Deshabilitar el boton mientras se procesa
+        // Deshabilitar el botón mientras se procesa
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Guardando...");
 
@@ -572,7 +262,7 @@ public class AjustesFragment extends Fragment {
         TextInputEditText confirmPasswordEdit = dialogView.findViewById(R.id.confirmPasswordEdit);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(" Cambiar Contraseña");
+        builder.setTitle("🔐 Cambiar Contraseña");
         builder.setView(dialogView);
 
         builder.setPositiveButton("Cambiar", null);
