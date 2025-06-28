@@ -17,8 +17,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 
+import com.example.sensorreaders.Models.Sensor;
+import com.example.sensorreaders.Utilities.SensorAlertChecker;
+import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
@@ -33,6 +39,8 @@ import com.google.firebase.auth.FirebaseUser;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.List;
+
 public class AjustesFragment extends Fragment {
 
     private TextView tvNombreUsuario, tvEmailUsuario;
@@ -41,6 +49,9 @@ public class AjustesFragment extends Fragment {
     private FirebaseAuth mAuth;
     private boolean isNotificationDialogOpen = false;
     private boolean notificationsEnabled = false;
+    private SensorViewModel viewModel;
+    private LiveData<List<Sensor>> listaSensores;
+    private Integer lastSensorIdShown = null;
 
     public AjustesFragment() {
         // Required empty public constructor
@@ -57,6 +68,7 @@ public class AjustesFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
         notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
+
     }
 
     @Override
@@ -68,7 +80,7 @@ public class AjustesFragment extends Fragment {
         initViews(view);
         setupUserInfo();
         setupListeners();
-
+        setlistSensor();
         return view;
     }
 
@@ -771,4 +783,66 @@ public class AjustesFragment extends Fragment {
 
         builder.create().show();
     }
+
+    // En el lugar donde recibes datos del sensor (ej: Firebase, API, etc.)
+    public void onSensorDataReceived(double temp, double humedad, double presion, double viento,
+                                     double luz, double lluvia, double gas, double humo, double humedadSuelo, long fecha) {
+
+        // Crear objeto con los datos del sensor
+        Sensor sensor = new Sensor(gas,humedad,humedadSuelo,humo,lluvia,luz,presion,temp,viento,fecha);
+
+        // Verificar alertas
+        SensorAlertChecker.checkSensorAlerts(getContext(), sensor);
+    }
+    public void setlistSensor(){
+        viewModel = new SensorViewModel(getActivity().getApplication());
+        listaSensores = viewModel.getSensorList();
+
+        viewModel.fromApiToFirebase();
+
+        // Inicializar lastSensorIdShown de forma más segura
+        if (listaSensores.getValue() != null && !listaSensores.getValue().isEmpty()){
+            lastSensorIdShown = listaSensores.getValue().size() - 1;
+        } else {
+            lastSensorIdShown = null; // Inicializar como null si no hay datos
+        }
+
+        // Observer con validaciones mejoradas
+        listaSensores.observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
+            @Override
+            public void onChanged(List<Sensor> sensors) {
+                // Validar que la lista no esté vacía
+                if (sensors == null || sensors.isEmpty()) {
+                    return;
+                }
+
+                // Determinar el índice del último sensor
+                int lastIndex = sensors.size() - 1;
+
+                // Validar que el índice sea válido
+                if (lastIndex >= 0 && lastIndex < sensors.size()) {
+                    // Actualizar lastSensorIdShown
+                    lastSensorIdShown = lastIndex;
+
+                    // Obtener el sensor más reciente
+                    Sensor latestSensor = sensors.get(lastIndex);
+
+                    // Llamar al método con los datos del sensor
+                    onSensorDataReceived(
+                            latestSensor.getTemperatura(),
+                            latestSensor.getHumedad(),
+                            latestSensor.getPresionAtmosferica(),
+                            latestSensor.getViento(),
+                            latestSensor.getLuz(),
+                            latestSensor.getLluvia(),
+                            latestSensor.getGas(),
+                            latestSensor.getHumo(),
+                            latestSensor.getHumedadSuelo(),
+                            latestSensor.getFecha()
+                    );
+                }
+            }
+        });
+    }
+
 }

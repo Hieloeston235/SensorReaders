@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         SensorNotificationHelper.createNotificationChannel(this);
 
-        Ejecutable();
+        //Ejecutable();
         SensorNotificationHelper.mostrarAlerta(this, "Hola Hopes; si lees esto TOMA *saca el dedo del en medio*");
         // Inicializar SessionManager
         sessionManager = new SessionManager(this);
@@ -156,6 +156,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    
+
 }
 
