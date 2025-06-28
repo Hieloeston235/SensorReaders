@@ -20,12 +20,22 @@ public class SensorViewModel extends AndroidViewModel {
     private SensorRepository apiRepository;
     private LiveData<List<Sensor>> sensorList;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private SensorRepository.Fuente fuenteActual = SensorRepository.Fuente.FIREBASE;
 
     public SensorViewModel(@NonNull Application application) {
         super(application);
         firebaseRepository = new SensorRepository(application, SensorRepository.Fuente.FIREBASE);
         apiRepository = new SensorRepository(application, SensorRepository.Fuente.API);
-        sensorList = apiRepository.getList(); // Por defecto usamos la base de datos de la API
+        sensorList = firebaseRepository.getList(); // Por defecto usamos la base de datos de la API
+    }
+    public void setFuente(SensorRepository.Fuente fuente) {
+        this.fuenteActual = fuente;
+
+        if (fuente == SensorRepository.Fuente.FIREBASE) {
+            sensorList = firebaseRepository.getList();
+        } else {
+            sensorList = apiRepository.getList();
+        }
     }
 
     // Métodos existentes mejorados
@@ -74,9 +84,7 @@ public class SensorViewModel extends AndroidViewModel {
     }
 
     public void refreshFromFirebase() {
-        executorService.execute(() -> {
-            firebaseRepository.refreshFromFirebase();
-        });
+        firebaseRepository.refreshFromFirebase();
     }
 
     public void refreshFromApi() {
@@ -92,13 +100,16 @@ public class SensorViewModel extends AndroidViewModel {
     }
 
     public void fromApiToFirebase() {
-        disconnectApi();
-        refreshFromFirebase();
+       apiRepository.disconnectApi();
+       firebaseRepository.refreshFromFirebase();
+       setFuente(SensorRepository.Fuente.FIREBASE);
     }
 
     public void fromFirebaseToApi() {
-        disconnectFirebase();
-        refreshFromApi();
+        firebaseRepository.disconnectFirebase();
+
+        apiRepository.refreshFromApi();
+        setFuente(SensorRepository.Fuente.API);
     }
 
     public List<Sensor> getAllFromApi() {

@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         SensorNotificationHelper.createNotificationChannel(this);
 
         //Ejecutable();
-        SensorNotificationHelper.mostrarAlerta(this, "Hola Hopes; si lees esto TOMA *saca el dedo del en medio*");
+        //SensorNotificationHelper.mostrarAlerta(this, "Hola Hopes; si lees esto TOMA *saca el dedo del en medio*");
         // Inicializar SessionManager
         sessionManager = new SessionManager(this);
 

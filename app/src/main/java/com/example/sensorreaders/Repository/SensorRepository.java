@@ -72,6 +72,7 @@ public class SensorRepository {
 
         apiService = retrofit.create(SensorApiService.class);
         firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
+        //refreshFromFirebase();
     }
 
     private void syncWithApi() {
@@ -83,7 +84,7 @@ public class SensorRepository {
                     if (response.isSuccessful() && response.body() != null) {
                         executorService.execute(() -> {
                             List<Sensor> apiSensors = response.body();
-                            sensoresDao.deleteAll();
+                            //sensoresDao.deleteAll();
                             for (Sensor sensor : apiSensors) {
                                 sensoresDao.insert(sensor);
                             }
@@ -150,23 +151,14 @@ public class SensorRepository {
     }
 
     public void syncLocalWithFirebase(List<Sensor> firebaseSensors) {
-        List<Sensor> localSensors = sensoresDao.getall();
-        Map<String, Sensor> localSensorsMap = new HashMap<>();
-        for (Sensor sensor : localSensors) {
-            if (sensor.getFirebaseKey() != null) {
-                localSensorsMap.put(sensor.getFirebaseKey(), sensor);
-            }
-        }
-
-        for (Sensor firebaseSensor : firebaseSensors) {
-            if (localSensorsMap.containsKey(firebaseSensor.getFirebaseKey())) {
-                sensoresDao.update(firebaseSensor);
-            } else {
-                firebaseSensor.setFecha(System.currentTimeMillis());
-                sensoresDao.insert(firebaseSensor);
-            }
+        // No borramos ni actualizamos, solo insertamos todos
+        for (Sensor sensor : firebaseSensors) {
+            sensor.setFecha(System.currentTimeMillis()); // opcional actualizar fecha
+            sensoresDao.insert(sensor);
+            Log.d("FirebaseSync", "Insertando sensor: " + sensor.getFirebaseKey());
         }
     }
+
 
     public void disconnectFirebase() {
         if (firebaseRef != null && firebaseListener != null) {
