@@ -15,6 +15,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.sensorreaders.Utilities.SensorNotificationHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
@@ -45,6 +46,8 @@ public class LoginActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SensorNotificationHelper.Ejecutable(this, this);
 
         // Inicializar Firebase Auth y SessionManager
         mAuth = FirebaseAuth.getInstance();
@@ -295,4 +298,5 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
         finish(); // Cerrar LoginActivity para que no pueda volver con el botón atrás
     }
+
 }

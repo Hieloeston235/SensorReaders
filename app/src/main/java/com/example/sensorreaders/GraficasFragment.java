@@ -143,7 +143,7 @@ public class GraficasFragment extends Fragment {
 
     private void setupViewModel() {
         viewModel = new SensorViewModel(getActivity().getApplication());
-        viewModel.refreshFROMApi();
+        viewModel.refreshFromApi();
 
         viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
             aplicarFiltroYActualizar(sensores);
