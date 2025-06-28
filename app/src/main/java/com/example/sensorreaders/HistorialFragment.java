@@ -85,17 +85,14 @@ public class HistorialFragment extends Fragment {
         tvContadorRegistros = view.findViewById(R.id.tvContadorRegistros);
     }
     private void RefreshConection(){
-        if (NetworkUtil.isConnectedToInternet(getActivity())) {
-            viewModel.refreshFROMApi();
-            Log.d("Refresh", "Refrescando desde la Firebase...");
-        } else {
-            Log.d("Refresh", "Sin conexión. Mostrando datos locales.");
-        }
+        //Se cancela la syncronizacion la base de firebase y se syncroniza con la base que esta en la API
+        viewModel.fromFirebaseToApi();
     }
 
     private void setupViewModelAndRecyclerView() {
         pdfGenerator = new PDFGenerator(getContext());
         viewModel = new SensorViewModel(getActivity().getApplication());
+
         RefreshConection();
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SensorAdapter();

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.sensorreaders.Models.Sensor;
 import com.example.sensorreaders.ViewModel.SensorViewModel;
@@ -57,24 +58,6 @@ public class SensorFragment extends Fragment {
     // Límite de puntos en el gráfico
     private static final int MAX_DATA_POINTS = 20;
 
-    private final android.os.Handler autoRefreshHandler = new android.os.Handler();
-    private final int REFRESH_INTERVAL_MS = 60_000; // 60 segundos
-    private final Runnable autoRefreshRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (getActivity() != null) {
-                if (NetworkUtil.isConnectedToInternet(getActivity())) {
-                    viewModels.refreshFROMApi();
-                    Log.d("AutoRefresh", "Refrescando desde la API...");
-                } else {
-                    Log.d("AutoRefresh", "Sin conexión. Mostrando datos locales.");
-                }
-                autoRefreshHandler.postDelayed(this, REFRESH_INTERVAL_MS);
-            }
-        }
-    };
-
-
     public SensorFragment() {
         // Constructor vacío obligatorio
     }
@@ -92,9 +75,11 @@ public class SensorFragment extends Fragment {
         setupCharts();
         observeData();
         setupButtons();
-        //autoRefreshHandler.postDelayed(autoRefreshRunnable, REFRESH_INTERVAL_MS);
         updateCurrentDate();
-        viewModels.syncWithFirebase();
+
+        //Se cancela la llamada realizada a la api si sigue en curso y se syncroniza con la de firebase
+        viewModels.fromApiToFirebase();
+
         return view;
     }
 
@@ -305,23 +290,40 @@ public class SensorFragment extends Fragment {
 
     private void setupButtons() {
         btnDescargarExcel.setOnClickListener(v -> {
-            if (listaSensores.getValue() != null && !listaSensores.getValue().isEmpty()) {
-                pdfGenerator.generateExcelFromLiveData(listaSensores, "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
-            } else {
-                Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
-            }
+            viewModels.fromFirebaseToApi();
+            listaSensores.observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
+                @Override
+                public void onChanged(List<Sensor> sensors) {
+                    if (sensors != null && !sensors.isEmpty()) {
+                        pdfGenerator.generateExcelFromLiveData(listaSensores, "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
+                    } else {
+                        Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
+                    }
+                    viewModels.fromApiToFirebase();
+                }
+            });
+
         });
 
         btnDescargarPDF.setOnClickListener(v -> {
-            if (listaSensores.getValue() != null && !listaSensores.getValue().isEmpty()) {
-                pdfGenerator.generateFromLiveData(listaSensores, "Reporte_Sensores_PDF_" + System.currentTimeMillis(), getActivity());
-            } else {
-                Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
-            }
+            viewModels.fromFirebaseToApi();
+            listaSensores.observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
+                @Override
+                public void onChanged(List<Sensor> sensors) {
+                    if (sensors != null && !sensors.isEmpty()) {
+                        pdfGenerator.generateFromLiveData(listaSensores, "Reporte_Sensores_PDF_" + System.currentTimeMillis(), getActivity());
+                    } else {
+                        Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
+                    }
+                    viewModels.fromApiToFirebase();
+                }
+            });
+
         });
 
         btnRefrescar.setOnClickListener(v -> {
-            viewModels.refreshFROMApi();
+
+            viewModels.syncWithFirebase();
             Toast.makeText(getContext(), "Refrescando datos...", Toast.LENGTH_SHORT).show();
         });
     }
@@ -334,7 +336,7 @@ public class SensorFragment extends Fragment {
         if (luzEntries != null) luzEntries.clear();
         if (vientoEntries != null) vientoEntries.clear();
         if (timeLabels != null) timeLabels.clear();
-        autoRefreshHandler.removeCallbacks(autoRefreshRunnable);
+
 
     }
 }
