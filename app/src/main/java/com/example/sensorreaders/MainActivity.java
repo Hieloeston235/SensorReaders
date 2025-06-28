@@ -4,17 +4,22 @@ import static android.content.ContentValues.TAG;
 
 import static androidx.core.content.ContextCompat.startActivity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 
 import com.example.sensorreaders.Database.database;
 import com.example.sensorreaders.Models.Sensor;
+import com.example.sensorreaders.Utilities.SensorNotificationHelper;
 import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,7 +45,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SensorNotificationHelper.createNotificationChannel(this);
 
+        Ejecutable();
+        SensorNotificationHelper.mostrarAlerta(this, "Hola Hopes; si lees esto TOMA *saca el dedo del en medio*");
         // Inicializar SessionManager
         sessionManager = new SessionManager(this);
 
@@ -138,5 +146,16 @@ public class MainActivity extends AppCompatActivity {
     public SessionManager getSessionManager() {
         return sessionManager;
     }
+    public void Ejecutable(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
+    }
+    
 }
 

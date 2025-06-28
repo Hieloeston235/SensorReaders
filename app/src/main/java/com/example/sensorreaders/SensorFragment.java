@@ -1,5 +1,6 @@
 package com.example.sensorreaders;
 
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 
 import com.example.sensorreaders.Models.Sensor;
+import com.example.sensorreaders.Utilities.SensorNotificationHelper;
 import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -76,6 +78,9 @@ public class SensorFragment extends Fragment {
         observeData();
         setupButtons();
         updateCurrentDate();
+
+
+
 
         //Se cancela la llamada realizada a la api si sigue en curso y se syncroniza con la de firebase
         viewModels.fromApiToFirebase();
@@ -339,4 +344,5 @@ public class SensorFragment extends Fragment {
 
 
     }
+
 }
