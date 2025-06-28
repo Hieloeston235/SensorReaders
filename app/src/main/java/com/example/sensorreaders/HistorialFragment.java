@@ -70,8 +70,7 @@ public class HistorialFragment extends Fragment {
 
         // Cargar datos iniciales (últimos 7 días por defecto)
         setFiltro7Dias();
-        //Se carga los datos de la api
-        RefreshConection();
+
     }
 
     private void initViews(View view) {
@@ -100,6 +99,8 @@ public class HistorialFragment extends Fragment {
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SensorAdapter();
         recyclerViewHistorial.setAdapter(adapter);
+        //Se carga los datos de la api
+        RefreshConection();
 
         viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
             aplicarFiltroYMostrar(sensores);

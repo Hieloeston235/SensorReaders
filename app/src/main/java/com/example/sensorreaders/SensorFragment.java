@@ -75,7 +75,7 @@ public class SensorFragment extends Fragment {
 
         viewModels = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
         //listaSensores = viewModels.getSensorList();
-
+        viewModels.fromApiToFirebase();
         listaSensores = viewModels.getSensorList();
 
         initializeViews(view);
@@ -354,6 +354,6 @@ public class SensorFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModels.fromApiToFirebase();
+
     }
 }
