@@ -58,7 +58,7 @@ public class SensorRepository {
         //syncWithApi();
         firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
 
-        starFirebaseSync();
+        //starFirebaseSync();
     }
     private void syncWithApi() {
         apiService.getSensores().enqueue(new Callback<List<Sensor>>() {
@@ -67,12 +67,16 @@ public class SensorRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     executorService.execute(() -> {
                         List<Sensor> apiSensors = response.body();
+
+                        // Borra todos los sensores locales antes de insertar
+                        sensoresDao.deleteAll();
+
                         for (Sensor sensor : apiSensors) {
-                            // Si quieres guardar la fecha actual como inserción
-                            //sensor.setFecha(System.currentTimeMillis());
                             sensoresDao.insert(sensor);
                         }
                     });
+
+
                 } else {
                     Log.e("API", "Respuesta fallida: " + response.code());
                 }
@@ -84,17 +88,22 @@ public class SensorRepository {
             }
         });
     }
+
     public void refreshFromApi() {
         syncWithApi();
     }
 
-
+    public void refreshFromFirebase(){
+        starFirebaseSync();
+    }
     private void starFirebaseSync() {
         firebaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 executorService.execute(() -> {
                     List<Sensor> firebaseSensors = new ArrayList<>();
+
+                    //sensoresDao.deleteAll();//Borra la tabla completa
 
                     // Obtener todos los datos de Firebase
                     for (DataSnapshot child : snapshot.getChildren()) {
@@ -103,6 +112,7 @@ public class SensorRepository {
                             sensor.setFirebaseKey(child.getKey());
                             firebaseSensors.add(sensor);
                         }
+                        Log.d("starFirebaseSync", "onDataChange: child: "+ child.getKey() );
                     }
 
                     // Sincronizar con la base de datos local
@@ -116,7 +126,7 @@ public class SensorRepository {
             }
         });
     }
-    private void syncLocalWithFirebase(List<Sensor> firebaseSensors) {
+    public void syncLocalWithFirebase(List<Sensor> firebaseSensors) {
         // Obtener sensores locales
         List<Sensor> localSensors = sensoresDao.getall();
 

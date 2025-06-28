@@ -11,10 +11,20 @@ import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class SensorDeserializer implements JsonDeserializer<Sensor> {
 
-    private static final SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault());
+    private static final SimpleDateFormat[] formats = new SimpleDateFormat[]{
+            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
+            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+    };
+
+    static {
+        for (SimpleDateFormat fmt : formats) {
+            fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+        }
+    }
 
     @Override
     public Sensor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -32,13 +42,27 @@ public class SensorDeserializer implements JsonDeserializer<Sensor> {
         sensor.setHumo(obj.get("humo").getAsDouble());
         sensor.setHumedadSuelo(obj.get("humedadSuelo").getAsDouble());
 
+
         try {
             String fechaStr = obj.get("fecha").getAsString();
-            Date date = isoFormat.parse(fechaStr);
-            sensor.setFecha(date.getTime()); // Guardamos como long
+            Date date = null;
+            for (SimpleDateFormat fmt : formats) {
+                try {
+                    date = fmt.parse(fechaStr);
+                    break;
+                } catch (Exception ignored) {}
+            }
+            if (date != null) {
+                sensor.setFecha(date.getTime());
+            } else {
+                sensor.setFecha(System.currentTimeMillis()); // fallback si ninguno funciona
+            }
         } catch (Exception e) {
             sensor.setFecha(System.currentTimeMillis()); // fallback
         }
+
+
+
 
         return sensor;
     }

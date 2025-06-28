@@ -77,6 +77,7 @@ public class SensorViewModel extends AndroidViewModel {
         executorService.execute(() -> {
             // Esto activará el listener de Firebase en el Repository
             // y actualizará automáticamente los datos locales
+            repository.refreshFromFirebase();
         });
     }
     public void refreshFROMApi(){
