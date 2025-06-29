@@ -301,39 +301,60 @@ public class SensorFragment extends Fragment {
     private void setupButtons() {
         btnDescargarExcel.setOnClickListener(v -> {
             viewModels.fromFirebaseToApi();
-            listaSensores.observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
+
+            // Observar una sola vez cuando lleguen los datos de Firebase
+            viewModels.getSensorList().observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
                 @Override
                 public void onChanged(List<Sensor> sensors) {
                     if (sensors != null && !sensors.isEmpty()) {
-                        pdfGenerator.generateExcelFromLiveData(listaSensores, "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
+                        pdfGenerator.generateExcelFromLiveData(viewModels.getSensorList(),
+                                "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
                     } else {
                         Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
                     }
+
+                    // Restaurar la fuente original (opcional)
                     viewModels.fromApiToFirebase();
+
+                    // Remueve el observer para que no quede escuchando
+                    viewModels.getSensorList().removeObserver(this);
                 }
             });
-
         });
 
         btnDescargarPDF.setOnClickListener(v -> {
             viewModels.fromFirebaseToApi();
-            listaSensores.observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
+
+            viewModels.getSensorList().observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
                 @Override
                 public void onChanged(List<Sensor> sensors) {
-                    if (sensors != null && !sensors.isEmpty()) {
-                        pdfGenerator.generateFromLiveData(listaSensores, "Reporte_Sensores_PDF_" + System.currentTimeMillis(), getActivity());
-                    } else {
+                    if (sensors != null && !sensors.isEmpty()){
+                        pdfGenerator.generateFromLiveData(viewModels.getSensorList(), "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
+                    }else {
                         Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
                     }
+                    // Restaurar la fuente original (opcional)
                     viewModels.fromApiToFirebase();
+
+                    // Remueve el observer para que no quede escuchando
+                    viewModels.getSensorList().removeObserver(this);
                 }
             });
+            //Se deja de lado el observe ya que no hay que monitorear los datos que venga de la api y solo se pide una actualizacion de la lista para los datos que tendra el pdf
+
+
+
+
+            viewModels.fromApiToFirebase();
+            listaSensores = viewModels.getSensorList();
 
         });
 
         btnRefrescar.setOnClickListener(v -> {
 
-            viewModels.syncWithFirebase();
+            viewModels.fromApiToFirebase();
+            listaSensores = viewModels.getSensorList();
+
             Toast.makeText(getContext(), "Refrescando datos...", Toast.LENGTH_SHORT).show();
         });
     }
