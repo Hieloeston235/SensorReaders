@@ -348,7 +348,6 @@ public class GraficasFragment extends Fragment {
         // Switch para habilitar/deshabilitar filtros de hora
         switchFiltroHoras.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateTimeRangeButtonsState(isChecked);
-            //  habilita/deshabilita el filtro por horas para cualquier rango
             if(isChecked) {
                 // Establecer horas por defecto (0:00 a 23:59) si no están seteadas
                 if(btnGraficaHoraInicio.getText().toString().equals("🕐 Hora Inicio")) {
@@ -359,6 +358,11 @@ public class GraficasFragment extends Fragment {
                     actualizarTextoHoras();
                 }
             }
+        });
+
+        // CORREGIDO: Mover el listener de limpiar filtros FUERA del de aplicar filtro
+        btnLimpiarFiltros.setOnClickListener(v -> {
+            limpiarFiltros();
         });
 
         // Aplicar filtro personalizado
@@ -406,9 +410,6 @@ public class GraficasFragment extends Fragment {
                     return;
                 }
             }
-            btnLimpiarFiltros.setOnClickListener(x -> {
-                limpiarFiltros();
-            });
 
             aplicarFiltroYActualizar(viewModel.getSensorList().getValue());
             resetearSeleccionBotones();
@@ -418,33 +419,45 @@ public class GraficasFragment extends Fragment {
 
         // Generar grafica
         btnGenerarGrafica.setOnClickListener(v -> {
+            Log.d("GENERAR_GRAFICA", "Botón presionado");
+
             if (fechaInicio == null || fechaFin == null) {
                 Toast.makeText(getContext(), "Debes seleccionar un rango de fechas primero", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            Log.d("GENERAR_GRAFICA", "Fechas válidas - Inicio: " + dateFormat.format(fechaInicio) +
+                    ", Fin: " + dateFormat.format(fechaFin));
+
             // Validar que haya datos filtrados
             if (datosFiltrados == null || datosFiltrados.isEmpty()) {
+                Log.d("GENERAR_GRAFICA", "No hay datos filtrados");
                 Toast.makeText(getContext(), "No hay datos para graficar con los filtros actuales", Toast.LENGTH_SHORT).show();
                 mostrarNoData(true);
                 return;
             }
 
+            Log.d("GENERAR_GRAFICA", "Datos filtrados: " + datosFiltrados.size());
+
             // Validar que al menos una variable esté seleccionada
             if (!haySensoresSeleccionados()) {
+                Log.d("GENERAR_GRAFICA", "No hay sensores seleccionados");
                 Toast.makeText(getContext(), "Selecciona al menos una variable para graficar", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            Log.d("GENERAR_GRAFICA", "Sensores seleccionados: " + contarSensoresSeleccionados());
+
             // Validar que las variables seleccionadas tengan datos
             if (!validarDatosSensoresSeleccionados()) {
+                Log.d("GENERAR_GRAFICA", "Variables seleccionadas no tienen datos válidos");
                 Toast.makeText(getContext(), "Las variables seleccionadas no tienen datos en el rango filtrado", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            Log.d("GENERAR_GRAFICA", "Todas las validaciones pasaron, generando gráfica...");
             generarGrafica();
         });
-
-
     }
 
     // Metodo para limpiar filtros
@@ -763,10 +776,55 @@ public class GraficasFragment extends Fragment {
         actualizarContadorRegistros(datosFiltrados != null ? datosFiltrados.size() : 0);
     }
 
+    // Agrega este método para debuggear los datos
+    private void debugearDatos() {
+        Log.d("DEBUG_DATOS", "=== INFORMACIÓN DE DEBUG ===");
+        Log.d("DEBUG_DATOS", "fechaInicio: " + (fechaInicio != null ? dateFormat.format(fechaInicio) : "null"));
+        Log.d("DEBUG_DATOS", "fechaFin: " + (fechaFin != null ? dateFormat.format(fechaFin) : "null"));
+
+        // Datos del ViewModel
+        List<Sensor> todosLosDatos = viewModel.getSensorList().getValue();
+        Log.d("DEBUG_DATOS", "Datos en ViewModel: " + (todosLosDatos != null ? todosLosDatos.size() : "null"));
+
+        // Datos filtrados
+        Log.d("DEBUG_DATOS", "Datos filtrados: " + (datosFiltrados != null ? datosFiltrados.size() : "null"));
+
+        // Estado de los checkboxes
+        Log.d("DEBUG_DATOS", "Checkboxes seleccionados:");
+        Log.d("DEBUG_DATOS", "  Temperatura: " + cbTemperatura.isChecked());
+        Log.d("DEBUG_DATOS", "  Humedad: " + cbHumedad.isChecked());
+        Log.d("DEBUG_DATOS", "  Presión: " + cbPresion.isChecked());
+        Log.d("DEBUG_DATOS", "  Humedad Suelo: " + cbHumedadSuelo.isChecked());
+        Log.d("DEBUG_DATOS", "  Luz: " + cbLuz.isChecked());
+        Log.d("DEBUG_DATOS", "  Viento: " + cbViento.isChecked());
+        Log.d("DEBUG_DATOS", "  Humo: " + cbHumo.isChecked());
+        Log.d("DEBUG_DATOS", "  Gas: " + cbGas.isChecked());
+
+        // Si hay datos filtrados, mostrar algunos ejemplos
+        if (datosFiltrados != null && !datosFiltrados.isEmpty()) {
+            Log.d("DEBUG_DATOS", "Primeros 3 datos filtrados:");
+            for (int i = 0; i < Math.min(3, datosFiltrados.size()); i++) {
+                Sensor s = datosFiltrados.get(i);
+                Log.d("DEBUG_DATOS", "  [" + i + "] ID: " + s.getId() +
+                        ", Fecha: " + new Date(s.getFecha()) +
+                        ", Temp: " + s.getTemperatura() +
+                        ", Hum: " + s.getHumedad());
+            }
+        }
+    }
+
+    // Modifica el método generarGrafica para incluir más logs
     private void generarGrafica() {
+        Log.d("GENERAR_GRAFICA", "=== INICIO GENERACIÓN GRÁFICA ===");
+
+        // Llamar al método de debug
+        debugearDatos();
+
         // Crear datasets para cada variable seleccionada
         List<ILineDataSet> dataSets = new ArrayList<>();
         List<String> etiquetasTiempo = crearEtiquetasTiempo();
+
+        Log.d("GENERAR_GRAFICA", "Etiquetas de tiempo creadas: " + etiquetasTiempo.size());
 
         int colorIndex = 0;
         float lineWidth = 2f;
@@ -776,77 +834,115 @@ public class GraficasFragment extends Fragment {
         int sensoresSeleccionados = contarSensoresSeleccionados();
         boolean usarNombresCortos = sensoresSeleccionados > 4;
 
+        Log.d("GENERAR_GRAFICA", "Sensores seleccionados: " + sensoresSeleccionados);
+
         if (cbTemperatura.isChecked()) {
-            String nombre = usarNombresCortos ? "Temp" : "Temperatura (°C)";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosTemperatura(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
-        }
-
-        if (cbHumedad.isChecked()) {
-            String nombre = usarNombresCortos ? "Hum" : "Humedad (%)";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosHumedad(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
-        }
-
-        if (cbPresion.isChecked()) {
-            String nombre = usarNombresCortos ? "Pres" : "Presion (hPa)";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosPresion(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
-        }
-
-        if (cbHumedadSuelo.isChecked()) {
-            String nombre = usarNombresCortos ? "H.Suelo" : "Humedad Suelo (%)";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosHumedadSuelo(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
-        }
-
-        if (cbLuz.isChecked()) {
-            String nombre = usarNombresCortos ? "Luz" : "Luz (lux)";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosLuz(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
-        }
-
-        if (cbViento.isChecked()) {
-            String nombre = usarNombresCortos ? "Viento" : "Viento (km/h)";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosViento(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
-        }
-
-        if (cbHumo.isChecked()) {
-            boolean hasHumoData = datosFiltrados.stream().anyMatch(s -> s.getHumo() != null && s.getHumo() > 0);
-            if (!hasHumoData) {
-                Toast.makeText(getContext(), "No hay datos validos de humo en el rango seleccionado", Toast.LENGTH_SHORT).show();
-                cbHumo.setChecked(false);
-            } else {
-                String nombre = "Humo";
-                LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosHumo(),
+            List<Entry> datos = extraerDatosTemperatura();
+            Log.d("GENERAR_GRAFICA", "Datos temperatura extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = usarNombresCortos ? "Temp" : "Temperatura (°C)";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
                         coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
                 dataSets.add(dataSet);
                 colorIndex++;
             }
         }
 
-        if (cbGas.isChecked()) {
-            String nombre = "Gas";
-            LineDataSet dataSet = crearDataSetMejorado(nombre, extraerDatosGas(),
-                    coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
-            dataSets.add(dataSet);
-            colorIndex++;
+        if (cbHumedad.isChecked()) {
+            List<Entry> datos = extraerDatosHumedad();
+            Log.d("GENERAR_GRAFICA", "Datos humedad extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = usarNombresCortos ? "Hum" : "Humedad (%)";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                        coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                dataSets.add(dataSet);
+                colorIndex++;
+            }
         }
 
+        if (cbPresion.isChecked()) {
+            List<Entry> datos = extraerDatosPresion();
+            Log.d("GENERAR_GRAFICA", "Datos presión extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = usarNombresCortos ? "Pres" : "Presion (hPa)";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                        coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                dataSets.add(dataSet);
+                colorIndex++;
+            }
+        }
+
+        if (cbHumedadSuelo.isChecked()) {
+            List<Entry> datos = extraerDatosHumedadSuelo();
+            Log.d("GENERAR_GRAFICA", "Datos humedad suelo extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = usarNombresCortos ? "H.Suelo" : "Humedad Suelo (%)";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                        coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                dataSets.add(dataSet);
+                colorIndex++;
+            }
+        }
+
+        if (cbLuz.isChecked()) {
+            List<Entry> datos = extraerDatosLuz();
+            Log.d("GENERAR_GRAFICA", "Datos luz extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = usarNombresCortos ? "Luz" : "Luz (lux)";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                        coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                dataSets.add(dataSet);
+                colorIndex++;
+            }
+        }
+
+        if (cbViento.isChecked()) {
+            List<Entry> datos = extraerDatosViento();
+            Log.d("GENERAR_GRAFICA", "Datos viento extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = usarNombresCortos ? "Viento" : "Viento (km/h)";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                        coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                dataSets.add(dataSet);
+                colorIndex++;
+            }
+        }
+
+        if (cbHumo.isChecked()) {
+            boolean hasHumoData = datosFiltrados.stream().anyMatch(s -> s.getHumo() != null && s.getHumo() > 0);
+            Log.d("GENERAR_GRAFICA", "Tiene datos de humo válidos: " + hasHumoData);
+            if (!hasHumoData) {
+                Toast.makeText(getContext(), "No hay datos validos de humo en el rango seleccionado", Toast.LENGTH_SHORT).show();
+                cbHumo.setChecked(false);
+            } else {
+                List<Entry> datos = extraerDatosHumo();
+                Log.d("GENERAR_GRAFICA", "Datos humo extraídos: " + datos.size());
+                if (!datos.isEmpty()) {
+                    String nombre = "Humo";
+                    LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                            coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                    dataSets.add(dataSet);
+                    colorIndex++;
+                }
+            }
+        }
+
+        if (cbGas.isChecked()) {
+            List<Entry> datos = extraerDatosGas();
+            Log.d("GENERAR_GRAFICA", "Datos gas extraídos: " + datos.size());
+            if (!datos.isEmpty()) {
+                String nombre = "Gas";
+                LineDataSet dataSet = crearDataSetMejorado(nombre, datos,
+                        coloresLineas[colorIndex % coloresLineas.length], lineWidth, circleRadius);
+                dataSets.add(dataSet);
+                colorIndex++;
+            }
+        }
+
+        Log.d("GENERAR_GRAFICA", "Total datasets creados: " + dataSets.size());
+
         if (dataSets.isEmpty()) {
+            Log.d("GENERAR_GRAFICA", "No hay datasets, mostrando NoData");
             mostrarNoData(true);
             return;
         }
@@ -855,6 +951,8 @@ public class GraficasFragment extends Fragment {
         LineData lineData = new LineData(dataSets);
         lineData.setValueTextSize(0f); // Desactivar texto de valores
         lineChart.setData(lineData);
+
+        Log.d("GENERAR_GRAFICA", "Datos configurados en el gráfico");
 
         // Configurar etiquetas del eje X
         XAxis xAxis = lineChart.getXAxis();
@@ -868,12 +966,15 @@ public class GraficasFragment extends Fragment {
         lineChart.invalidate();
         lineChart.animateY(800); // Animacion mas rapida
 
+        Log.d("GENERAR_GRAFICA", "Gráfico actualizado e invalidado");
+
         // Mostrar grafico
         mostrarNoData(false);
 
         // Generar estadisticas
         generarEstadisticas();
 
+        Log.d("GENERAR_GRAFICA", "=== FIN GENERACIÓN GRÁFICA ===");
         Toast.makeText(getContext(), "Grafica generada exitosamente", Toast.LENGTH_SHORT).show();
     }
 
