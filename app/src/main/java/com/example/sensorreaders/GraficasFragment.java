@@ -9,8 +9,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.cardview.widget.CardView;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +44,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -52,7 +55,7 @@ public class GraficasFragment extends Fragment {
     private Button btnGraficaFechaInicio, btnGraficaFechaFin, btnAplicarFiltroGrafica;
     private Button btnGenerarGrafica;
     private Button btnGraficaHoraInicio, btnGraficaHoraFin;
-    private Button btnUltimas3Horas, btnUltimas6Horas, btnUltimas12Horas, btnUltimas24Horas;
+    private Button btnUltimas3Horas, btnUltimas6Horas, btnUltimas12Horas, btnUltimas24Horas,btnLimpiarFiltros;
 
     // CheckBoxes para seleccionar variables
     private CheckBox cbTemperatura, cbHumedad, cbPresion, cbHumedadSuelo, cbLuz, cbViento, cbHumo, cbGas;
@@ -97,7 +100,7 @@ public class GraficasFragment extends Fragment {
         // Inicializar vistas
         initViews(view);
 
-        // Configurar tamaño del chart según pantalla
+        // Configurar tamaño del chart segun pantalla
         ajustarTamanoChart();
 
         // Configurar formatos de fecha y hora
@@ -114,6 +117,7 @@ public class GraficasFragment extends Fragment {
 
         // Cargar datos iniciales (ultimos 7 dias por defecto)
         setFiltro7Dias();
+
     }
 
     private void ajustarTamanoChart() {
@@ -140,6 +144,7 @@ public class GraficasFragment extends Fragment {
         btnGraficaFechaInicio = view.findViewById(R.id.btnGraficaFechaInicio);
         btnGraficaFechaFin = view.findViewById(R.id.btnGraficaFechaFin);
         btnAplicarFiltroGrafica = view.findViewById(R.id.btnAplicarFiltroGrafica);
+        btnLimpiarFiltros = view.findViewById(R.id.btnLimpiarFiltros);
 
         // Botones de hora
         btnGraficaHoraInicio = view.findViewById(R.id.btnGraficaHoraInicio);
@@ -193,19 +198,42 @@ public class GraficasFragment extends Fragment {
         dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
         dateTimeFormat = new SimpleDateFormat("dd/MM HH:mm", Locale.getDefault());
+
+        // Opcional: usar UTC para evitar problemas de zona horaria
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        dateTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     private void setupViewModel() {
-        viewModel = new SensorViewModel(getActivity().getApplication());
-        viewModel.refreshFromApi();
+        viewModel = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
 
         viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
-            aplicarFiltroYActualizar(sensores);
+            if (sensores != null && !sensores.isEmpty()) {
+                aplicarFiltroYActualizar(sensores);
+                if (sensores != null) {
+                    Log.d("DATOS", "Total de datos recibidos: " + sensores.size());
+                    for(Sensor s : sensores) {
+                        Log.d("DATOS", "ID: " + s.getId() + " - Fecha: " +
+                                (s != null ? new Date(s.getFecha()).toString() : "null"));
+                    }
+                }
+
+            } else {
+                // Intentar cargar datos si no hay
+                viewModel.refreshFromApi();
+            }
         });
+
+        // Forzar carga inicial si no hay datos
+        if (viewModel.getSensorList().getValue() == null || viewModel.getSensorList().getValue().isEmpty()) {
+            viewModel.refreshFromApi();
+        }
+
     }
 
     private void setupChart() {
-        // Configuracion basica mejorada
+        // Configuracion basica
         lineChart.setTouchEnabled(true);
         lineChart.setDragEnabled(true);
         lineChart.setScaleEnabled(true);
@@ -237,7 +265,7 @@ public class GraficasFragment extends Fragment {
         xAxis.setAvoidFirstLastClipping(true);
         xAxis.setLabelCount(5, true);
         xAxis.setTextSize(9f);
-        xAxis.setSpaceMin(0.5f);  // Espacio mínimo entre etiquetas
+        xAxis.setSpaceMin(0.5f);  // Espacio minimo entre etiquetas
         xAxis.setSpaceMax(0.5f);
 
         // Configurar eje Y izquierdo
@@ -254,7 +282,7 @@ public class GraficasFragment extends Fragment {
         YAxis rightAxis = lineChart.getAxisRight();
         rightAxis.setEnabled(false);
 
-        // Configurar leyenda optimizada para múltiples elementos
+        // Configurar leyenda optimizada para multiples elementos
         setupLegendOptimized();
     }
 
@@ -319,16 +347,23 @@ public class GraficasFragment extends Fragment {
 
         // Switch para habilitar/deshabilitar filtros de hora
         switchFiltroHoras.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            btnGraficaHoraInicio.setEnabled(isChecked);
-            btnGraficaHoraFin.setEnabled(isChecked);
-
-            // Actualizar el estado y apariencia de los botones de rangos rapidos
             updateTimeRangeButtonsState(isChecked);
+            //  habilita/deshabilita el filtro por horas para cualquier rango
+            if(isChecked) {
+                // Establecer horas por defecto (0:00 a 23:59) si no están seteadas
+                if(btnGraficaHoraInicio.getText().toString().equals("🕐 Hora Inicio")) {
+                    horaInicio = 0;
+                    minutoInicio = 0;
+                    horaFin = 23;
+                    minutoFin = 59;
+                    actualizarTextoHoras();
+                }
+            }
         });
 
         // Aplicar filtro personalizado
         btnAplicarFiltroGrafica.setOnClickListener(v -> {
-            // Validar que ambas fechas estén seleccionadas
+            // Validar que ambas fechas esten seleccionadas
             if (fechaInicio == null || fechaFin == null) {
                 Toast.makeText(getContext(), "Debes seleccionar ambas fechas (inicio y fin)", Toast.LENGTH_SHORT).show();
                 return;
@@ -371,6 +406,9 @@ public class GraficasFragment extends Fragment {
                     return;
                 }
             }
+            btnLimpiarFiltros.setOnClickListener(x -> {
+                limpiarFiltros();
+            });
 
             aplicarFiltroYActualizar(viewModel.getSensorList().getValue());
             resetearSeleccionBotones();
@@ -380,6 +418,10 @@ public class GraficasFragment extends Fragment {
 
         // Generar grafica
         btnGenerarGrafica.setOnClickListener(v -> {
+            if (fechaInicio == null || fechaFin == null) {
+                Toast.makeText(getContext(), "Debes seleccionar un rango de fechas primero", Toast.LENGTH_SHORT).show();
+                return;
+            }
             // Validar que haya datos filtrados
             if (datosFiltrados == null || datosFiltrados.isEmpty()) {
                 Toast.makeText(getContext(), "No hay datos para graficar con los filtros actuales", Toast.LENGTH_SHORT).show();
@@ -403,6 +445,33 @@ public class GraficasFragment extends Fragment {
         });
 
 
+    }
+
+    // Metodo para limpiar filtros
+    private void limpiarFiltros() {
+        // Resetear fechas
+        fechaInicio = null;
+        fechaFin = null;
+        btnGraficaFechaInicio.setText("📅 Fecha Inicio");
+        btnGraficaFechaFin.setText("📅 Fecha Fin");
+
+        // Resetear horas
+        horaInicio = 0;
+        minutoInicio = 0;
+        horaFin = 23;
+        minutoFin = 59;
+        actualizarTextoHoras();
+
+        // Desactivar switch
+        switchFiltroHoras.setChecked(false);
+
+        // Resetear seleccion de botones
+        resetearSeleccionBotones();
+        resetTimeRangeButtonsSelection();
+
+        // Mostrar mensaje
+        Toast.makeText(getContext(), "Filtros limpiados", Toast.LENGTH_SHORT).show();
+        actualizarTextoRangoSeleccionado();
     }
     private boolean haySensoresSeleccionados() {
         return cbTemperatura.isChecked() || cbHumedad.isChecked() || cbPresion.isChecked() ||
@@ -530,40 +599,48 @@ public class GraficasFragment extends Fragment {
     private void setFiltro7Dias() {
         limpiarGrafica();
         Calendar calInicio = Calendar.getInstance();
-        calInicio.add(Calendar.DAY_OF_YEAR, -6);
+        calInicio.add(Calendar.DAY_OF_YEAR, -7);
         fechaInicio = inicioDelDia(calInicio.getTime());
-        fechaFin = finDelDia(new Date());
+
+        Calendar calFin = Calendar.getInstance();
+        fechaFin = finDelDia(calFin.getTime());
+
         horaInicio = 0;
         minutoInicio = 0;
         horaFin = 23;
         minutoFin = 59;
         actualizarTextoHoras();
+        actualizarTextoFechas();
+
+        // Forzar actualizacion del switch
+        switchFiltroHoras.setChecked(true);
+        updateTimeRangeButtonsState(true);
+
         aplicarFiltroYActualizar(viewModel.getSensorList().getValue());
+
+        // Depuración
+        Log.d("FILTRO_7DIAS", "Fecha inicio: " + dateFormat.format(fechaInicio) +
+                " - Fecha fin: " + dateFormat.format(fechaFin));
     }
 
     private void setFiltroUltimasHoras(int horas) {
         limpiarGrafica();
-        // Activar el switch si no está activado
-        if (!switchFiltroHoras.isChecked()) {
-            switchFiltroHoras.setChecked(true);
-        }
 
-        Calendar cal = Calendar.getInstance();
-        fechaFin = cal.getTime();
-        cal.add(Calendar.HOUR_OF_DAY, -horas);
-        fechaInicio = cal.getTime();
+        // Configurar fechas basadas en las horas
+        Calendar calFin = Calendar.getInstance();
+        fechaFin = calFin.getTime();
+
+        Calendar calInicio = Calendar.getInstance();
+        calInicio.add(Calendar.HOUR_OF_DAY, -horas);
+        fechaInicio = calInicio.getTime();
 
         // Configurar horas para el filtro
-        Calendar inicioCal = Calendar.getInstance();
-        inicioCal.setTime(fechaInicio);
-        horaInicio = inicioCal.get(Calendar.HOUR_OF_DAY);
-        minutoInicio = inicioCal.get(Calendar.MINUTE);
+        horaInicio = calInicio.get(Calendar.HOUR_OF_DAY);
+        minutoInicio = calInicio.get(Calendar.MINUTE);
+        horaFin = calFin.get(Calendar.HOUR_OF_DAY);
+        minutoFin = calFin.get(Calendar.MINUTE);
 
-        Calendar finCal = Calendar.getInstance();
-        finCal.setTime(fechaFin);
-        horaFin = finCal.get(Calendar.HOUR_OF_DAY);
-        minutoFin = finCal.get(Calendar.MINUTE);
-
+        // Actualizar UI
         actualizarTextoHoras();
         actualizarTextoFechas();
         aplicarFiltroYActualizar(viewModel.getSensorList().getValue());
@@ -572,19 +649,14 @@ public class GraficasFragment extends Fragment {
         // Resaltar el boton presionado
         resetTimeRangeButtonsSelection();
         switch(horas) {
-            case 3:
-                btnUltimas3Horas.setSelected(true);
-                break;
-            case 6:
-                btnUltimas6Horas.setSelected(true);
-                break;
-            case 12:
-                btnUltimas12Horas.setSelected(true);
-                break;
-            case 24:
-                btnUltimas24Horas.setSelected(true);
-                break;
+            case 3: btnUltimas3Horas.setSelected(true); break;
+            case 6: btnUltimas6Horas.setSelected(true); break;
+            case 12: btnUltimas12Horas.setSelected(true); break;
+            case 24: btnUltimas24Horas.setSelected(true); break;
         }
+
+        // Activar el switch de filtro de horas
+        switchFiltroHoras.setChecked(true);
     }
 
     private void resetTimeRangeButtonsSelection() {
@@ -616,13 +688,22 @@ public class GraficasFragment extends Fragment {
 
         String rango;
         if (dateFormat.format(fechaInicio).equals(dateFormat.format(fechaFin))) {
-            // Mismo dia
-            rango = dateFormat.format(fechaInicio) + " " +
-                    String.format(Locale.getDefault(), "%02d:%02d", horaInicio, minutoInicio) + " - " +
-                    String.format(Locale.getDefault(), "%02d:%02d", horaFin, minutoFin);
+            // Mismo dia - mostrar horas si el filtro de horas esta activado
+            rango = dateFormat.format(fechaInicio);
+            if(switchFiltroHoras.isChecked()) {
+                rango += " " + String.format(Locale.getDefault(), "%02d:%02d", horaInicio, minutoInicio) +
+                        " - " + String.format(Locale.getDefault(), "%02d:%02d", horaFin, minutoFin);
+            }
         } else {
-            // Diferentes dias
-            rango = dateTimeFormat.format(fechaInicio) + " - " + dateTimeFormat.format(fechaFin);
+            // Diferentes dias - mostrar fechas completas
+            rango = dateFormat.format(fechaInicio);
+            if(switchFiltroHoras.isChecked()) {
+                rango += " " + String.format(Locale.getDefault(), "%02d:%02d", horaInicio, minutoInicio);
+            }
+            rango += " - " + dateFormat.format(fechaFin);
+            if(switchFiltroHoras.isChecked()) {
+                rango += " " + String.format(Locale.getDefault(), "%02d:%02d", horaFin, minutoFin);
+            }
         }
         tvRangoSeleccionado.setText("Rango: " + rango);
     }
@@ -637,18 +718,25 @@ public class GraficasFragment extends Fragment {
         if (lista == null || lista.isEmpty()) {
             datosFiltrados = null;
             actualizarContadorRegistros(0);
+            Log.d("FILTRO", "No hay datos disponibles");
             return;
         }
+
+        // Depuración de fechas
+        Log.d("FILTRO", "Filtrando entre: " + dateFormat.format(fechaInicio) +
+                " " + horaInicio + ":" + minutoInicio + " y " +
+                dateFormat.format(fechaFin) + " " + horaFin + ":" + minutoFin);
 
         if (fechaInicio == null || fechaFin == null) {
             datosFiltrados = lista;
         } else {
             datosFiltrados = lista.stream()
                     .filter(s -> {
-                        Date fechaSensor = new Date(s.getFecha());
-                        if (fechaSensor == null) return false;
+                        if (s == null) return false;
 
-                        // Crear calendarios para comparacion
+                        Date fechaSensor = new Date(s.getFecha());
+                        Log.d("FILTRO", "Procesando dato con fecha: " + dateTimeFormat.format(fechaSensor));
+
                         Calendar calSensor = Calendar.getInstance();
                         calSensor.setTime(fechaSensor);
 
@@ -662,13 +750,16 @@ public class GraficasFragment extends Fragment {
                         calFin.set(Calendar.HOUR_OF_DAY, horaFin);
                         calFin.set(Calendar.MINUTE, minutoFin);
 
-                        // Verificar si esta dentro del rango
-                        return !fechaSensor.before(calInicio.getTime()) &&
+                        boolean dentroRango = !fechaSensor.before(calInicio.getTime()) &&
                                 !fechaSensor.after(calFin.getTime());
+
+                        Log.d("FILTRO", "Dato " + s.getId() + " dentro de rango: " + dentroRango);
+                        return dentroRango;
                     })
                     .collect(Collectors.toList());
         }
 
+        Log.d("FILTRO", "Datos encontrados: " + (datosFiltrados != null ? datosFiltrados.size() : 0));
         actualizarContadorRegistros(datosFiltrados != null ? datosFiltrados.size() : 0);
     }
 
@@ -916,21 +1007,42 @@ public class GraficasFragment extends Fragment {
     }
     private List<String> crearEtiquetasTiempo() {
         List<String> etiquetas = new ArrayList<>();
-        long diffDays = (fechaFin.getTime() - fechaInicio.getTime()) / (24 * 60 * 60 * 1000);
 
-        for (Sensor sensor : datosFiltrados) {
-            Date fecha = new Date(sensor.getFecha());
-            if (diffDays <= 1) {
-                // Si el rango es de un dia o menos, mostrar solo hora
-                etiquetas.add(timeFormat.format(fecha));
-            } else if (diffDays <= 7) {
-                // Si el rango es de una semana o menos, mostrar dia y hora
-                etiquetas.add(dateTimeFormat.format(fecha));
-            } else {
-                // Para rangos mayores, mostrar solo fecha
-                etiquetas.add(dateFormat.format(fecha));
-            }
+        if (fechaInicio == null || fechaFin == null || datosFiltrados == null || datosFiltrados.isEmpty()) {
+            Log.d("ETIQUETAS", "No hay datos para generar etiquetas");
+            return etiquetas;
         }
+
+        try {
+            long diffMillis = fechaFin.getTime() - fechaInicio.getTime();
+            long diffDays = TimeUnit.MILLISECONDS.toDays(diffMillis);
+            long diffHours = TimeUnit.MILLISECONDS.toHours(diffMillis);
+
+            Log.d("ETIQUETAS", "Diferencia en dias: " + diffDays + ", horas: " + diffHours);
+
+            for (Sensor sensor : datosFiltrados) {
+                if(sensor == null) {
+                    Log.d("ETIQUETAS", "Sensor o fecha nula, omitiendo");
+                    continue;
+                }
+
+                Date fecha = new Date(sensor.getFecha());
+                if (diffHours <= 24) {
+                    // Menos de 24 horas - mostrar hora:minuto
+                    etiquetas.add(timeFormat.format(fecha));
+                } else if (diffDays <= 3) {
+                    // 1-3 dias - mostrar dia y hora
+                    etiquetas.add(dateTimeFormat.format(fecha));
+                } else {
+                    // Más de 3 dias - mostrar solo fecha
+                    etiquetas.add(dateFormat.format(fecha));
+                }
+            }
+        } catch (Exception e) {
+            Log.e("ETIQUETAS", "Error generando etiquetas: " + e.getMessage());
+        }
+
+        Log.d("ETIQUETAS", "Etiquetas generadas: " + etiquetas.size());
         return etiquetas;
     }
 
