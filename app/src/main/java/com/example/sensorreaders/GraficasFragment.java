@@ -185,13 +185,7 @@ public class GraficasFragment extends Fragment {
         layoutNoDataGrafica = view.findViewById(R.id.layoutNoDataGrafica);
         layoutEstadisticas = view.findViewById(R.id.layoutEstadisticas);
 
-        // Crear LineChart programaticamente y agregarlo al CardView
-        lineChart = new LineChart(getContext());
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
-        lineChart.setLayoutParams(params);
-        ((ViewGroup)cardGrafica.getChildAt(0)).addView(lineChart, 0);
+        lineChart = view.findViewById(R.id.lineChart);
     }
 
     private void setupFormats() {
