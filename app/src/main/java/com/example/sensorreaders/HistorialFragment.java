@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -69,6 +70,7 @@ public class HistorialFragment extends Fragment {
 
         // Cargar datos iniciales (últimos 7 días por defecto)
         setFiltro7Dias();
+
     }
 
     private void initViews(View view) {
@@ -91,12 +93,14 @@ public class HistorialFragment extends Fragment {
 
     private void setupViewModelAndRecyclerView() {
         pdfGenerator = new PDFGenerator(getContext());
-        viewModel = new SensorViewModel(getActivity().getApplication());
+        viewModel = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
 
-        RefreshConection();
+
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SensorAdapter();
         recyclerViewHistorial.setAdapter(adapter);
+        //Se carga los datos de la api
+        RefreshConection();
 
         viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
             aplicarFiltroYMostrar(sensores);

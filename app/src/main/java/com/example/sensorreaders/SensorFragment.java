@@ -12,9 +12,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.sensorreaders.Models.Sensor;
 import com.example.sensorreaders.Utilities.SensorNotificationHelper;
@@ -70,7 +73,9 @@ public class SensorFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_sensor, container, false);
         pdfGenerator = new PDFGenerator(getContext());
 
-        viewModels = new SensorViewModel(getActivity().getApplication());
+        viewModels = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
+        //listaSensores = viewModels.getSensorList();
+        viewModels.fromApiToFirebase();
         listaSensores = viewModels.getSensorList();
 
         initializeViews(view);
@@ -83,7 +88,7 @@ public class SensorFragment extends Fragment {
 
 
         //Se cancela la llamada realizada a la api si sigue en curso y se syncroniza con la de firebase
-        viewModels.fromApiToFirebase();
+
 
         return view;
     }
@@ -345,4 +350,10 @@ public class SensorFragment extends Fragment {
 
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+
+    }
 }
