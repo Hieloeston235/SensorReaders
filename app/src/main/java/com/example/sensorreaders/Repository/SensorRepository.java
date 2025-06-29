@@ -73,6 +73,7 @@ public class SensorRepository {
         apiService = retrofit.create(SensorApiService.class);
         firebaseRef = FirebaseDatabase.getInstance().getReference("sensores");
         //refreshFromFirebase();
+
     }
 
     private void syncWithApi() {
