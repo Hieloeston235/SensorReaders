@@ -256,7 +256,7 @@
             setupSeekBarListeners(seekBarTempMax, tvTempMaxValue, "°C", 0);
             setupSeekBarListeners(seekBarHumedadMin, tvHumedadMinValue, "%", 0);
             setupSeekBarListeners(seekBarHumedadMax, tvHumedadMaxValue, "%", 0);
-            setupSeekBarListeners(seekBarPresionMin, tvPresionMinValue, " hPa", 500);
+            setupSeekBarListeners(seekBarPresionMin, tvPresionMinValue, " hPa", 480);
             setupSeekBarListeners(seekBarPresionMax, tvPresionMaxValue, " hPa", 500);
             setupSeekBarListeners(seekBarVientoMax, tvVientoMaxValue, " km/h", 0);
             setupSeekBarListeners(seekBarLuzMin, tvLuzMinValue, " lux", 0);
@@ -341,7 +341,7 @@
             tempMax.setProgress(prefs.getInt("temp_max", 35));
             humedadMin.setProgress(prefs.getInt("humedad_min", 30));
             humedadMax.setProgress(prefs.getInt("humedad_max", 80));
-            presionMin.setProgress(prefs.getInt("presion_min", 480)); // 980 hPa
+            presionMin.setProgress(prefs.getInt("presion_min", 503)); // 980 hPa
             presionMax.setProgress(prefs.getInt("presion_max", 523)); // 1030 hPa
             vientoMax.setProgress(prefs.getInt("viento_max", 25));
             luzMin.setProgress(prefs.getInt("luz_min", 100));
@@ -422,7 +422,7 @@
             humedadMax.setProgress(80);
 
             // Valores por defecto para presion (hPa) -  tienen offset de 500
-            presionMin.setProgress(480); // 980 hPa
+            presionMin.setProgress(1003); // 980 hPa
             presionMax.setProgress(523); // 1030 hPa
 
             // Valor por defecto para viento (km/h)

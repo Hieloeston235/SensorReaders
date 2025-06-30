@@ -337,14 +337,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:max="500"
-                        android:progress="480" />
+                        android:max="503"
+                        android:progress="523" />
 
                     <TextView
                         android:id="@+id/tvPresionMinValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="980 hPa"
+                        android:text="1003 hPa"
                         android:textSize="14sp"
                         android:textColor="@color/primary_color"
                         android:layout_marginStart="8dp"
