@@ -119,4 +119,5 @@ public class SensorViewModel extends AndroidViewModel {
     public List<Sensor> getAllFromFirebase() {
         return firebaseRepository.getAll();
     }
+
 }

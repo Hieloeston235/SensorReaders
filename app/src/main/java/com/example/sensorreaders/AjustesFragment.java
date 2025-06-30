@@ -80,7 +80,7 @@
             initViews(view);
             setupUserInfo();
             setupListeners();
-            setlistSensor();
+            //setlistSensor();
             return view;
         }
 
@@ -256,7 +256,7 @@
             setupSeekBarListeners(seekBarTempMax, tvTempMaxValue, "°C", 0);
             setupSeekBarListeners(seekBarHumedadMin, tvHumedadMinValue, "%", 0);
             setupSeekBarListeners(seekBarHumedadMax, tvHumedadMaxValue, "%", 0);
-            setupSeekBarListeners(seekBarPresionMin, tvPresionMinValue, " hPa", 480);
+            setupSeekBarListeners(seekBarPresionMin, tvPresionMinValue, " hPa", 480 );
             setupSeekBarListeners(seekBarPresionMax, tvPresionMaxValue, " hPa", 500);
             setupSeekBarListeners(seekBarVientoMax, tvVientoMaxValue, " km/h", 0);
             setupSeekBarListeners(seekBarLuzMin, tvLuzMinValue, " lux", 0);
