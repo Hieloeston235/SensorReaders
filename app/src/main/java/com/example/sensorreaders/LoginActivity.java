@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        SensorNotificationHelper.Ejecutable(this, this);
+        //SensorNotificationHelper.Ejecutable(this, this);
 
         // Inicializar Firebase Auth y SessionManager
         mAuth = FirebaseAuth.getInstance();

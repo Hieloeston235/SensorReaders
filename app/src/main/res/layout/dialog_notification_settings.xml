@@ -372,14 +372,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:max="500"
-                        android:progress="530" />
+                        android:max="523"
+                        android:progress="523" />
 
                     <TextView
                         android:id="@+id/tvPresionMaxValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1030 hPa"
+                        android:text="1023 hPa"
                         android:textSize="14sp"
                         android:textColor="@color/primary_color"
                         android:layout_marginStart="8dp"
@@ -702,14 +702,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:max="1000"
-                        android:progress="500" />
+                        android:max="100"
+                        android:progress="50" />
 
                     <TextView
                         android:id="@+id/tvGasMaxValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="500 ppm"
+                        android:text="50%"
                         android:textSize="14sp"
                         android:textColor="@color/primary_color"
                         android:layout_marginStart="8dp"
@@ -781,14 +781,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:max="1000"
-                        android:progress="300" />
+                        android:max="100"
+                        android:progress="30" />
 
                     <TextView
                         android:id="@+id/tvHumoMaxValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="300 ppm"
+                        android:text="30%"
                         android:textSize="14sp"
                         android:textColor="@color/primary_color"
                         android:layout_marginStart="8dp"
