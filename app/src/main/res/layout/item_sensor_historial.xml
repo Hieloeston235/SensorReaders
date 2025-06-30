@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/itemContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:minHeight="50dp"
+    android:gravity="center_vertical">
+
+    <!-- Fecha y Hora -->
+    <TextView
+        android:id="@+id/tvFechaHora"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="25/06/2025\n14:30"
+        android:textSize="9sp"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-condensed"
+        android:lineSpacingExtra="1dp"
+        android:padding="4dp" />
+
+    <!-- Temperatura -->
+    <TextView
+        android:id="@+id/tvTemperatura"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="24.5°C"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        android:padding="4dp" />
+
+    <!-- Humedad -->
+    <TextView
+        android:id="@+id/tvHumedad"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="65%"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        android:padding="4dp" />
+
+    <!-- Presión -->
+    <TextView
+        android:id="@+id/tvPresion"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:text="1013 hPa"
+        android:textSize="9sp"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-condensed"
+        android:padding="4dp" />
+
+    <!-- Humedad del Suelo -->
+    <TextView
+        android:id="@+id/tvHumedadSuelo"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:text="45%"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        android:padding="4dp" />
+
+    <!-- Luz -->
+    <TextView
+        android:id="@+id/tvLuz"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="850 lux"
+        android:textSize="9sp"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-condensed"
+        android:padding="4dp" />
+
+    <!-- Viento -->
+    <TextView
+        android:id="@+id/tvViento"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="12 km/h"
+        android:textSize="9sp"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-condensed"
+        android:padding="4dp" />
+
+    <!-- Lluvia -->
+    <TextView
+        android:id="@+id/tvLluvia"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="2.5 mm"
+        android:textSize="9sp"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-condensed"
+        android:padding="4dp" />
+
+    <!-- Humo -->
+    <TextView
+        android:id="@+id/tvHumo"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="Low"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        android:padding="4dp" />
+
+    <!-- Gas -->
+    <TextView
+        android:id="@+id/tvGas"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="Normal"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        android:padding="4dp" />
+
+</LinearLayout>

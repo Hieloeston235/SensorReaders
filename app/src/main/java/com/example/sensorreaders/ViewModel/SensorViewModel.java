@@ -16,14 +16,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class SensorViewModel extends AndroidViewModel {
-    private SensorRepository repository;
+    private SensorRepository firebaseRepository;
+    private SensorRepository apiRepository;
     private LiveData<List<Sensor>> sensorList;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private SensorRepository.Fuente fuenteActual = SensorRepository.Fuente.FIREBASE;
 
     public SensorViewModel(@NonNull Application application) {
         super(application);
-        repository = new SensorRepository(application);
-        sensorList = repository.getList();
+        firebaseRepository = new SensorRepository(application, SensorRepository.Fuente.FIREBASE);
+        apiRepository = new SensorRepository(application, SensorRepository.Fuente.API);
+        sensorList = firebaseRepository.getList(); // Por defecto usamos la base de datos de la API
+    }
+    public void setFuente(SensorRepository.Fuente fuente) {
+        this.fuenteActual = fuente;
+
+        if (fuente == SensorRepository.Fuente.FIREBASE) {
+            sensorList = firebaseRepository.getList();
+        } else {
+            sensorList = apiRepository.getList();
+        }
     }
 
     // Métodos existentes mejorados
@@ -31,55 +43,81 @@ public class SensorViewModel extends AndroidViewModel {
         return sensorList;
     }
 
-    public void insertSensor(Sensor sensor) {
+    public void insertSensor(Sensor sensor, SensorRepository.Fuente fuente) {
+        SensorRepository repo = (fuente == SensorRepository.Fuente.API) ? apiRepository : firebaseRepository;
         executorService.execute(() -> {
-            // Verificar si el sensor ya existe en Firebase
-            if (sensor.getFirebaseKey() == null) {
-                // Asignar un ID temporal para operaciones offline
-                sensor.setLocalOnly(true);
-            }
-            repository.Insert(sensor);
-        });
-    }
-
-    public void updateSensor(Sensor sensor) {
-        executorService.execute(() -> {
-            // Marcar como modificado localmente si es un sensor offline
             if (sensor.getFirebaseKey() == null) {
                 sensor.setLocalOnly(true);
             }
-            repository.Update(sensor);
+            repo.Insert(sensor);
         });
     }
 
-    public void deleteSensor(Sensor sensor) {
+    public void updateSensor(Sensor sensor, SensorRepository.Fuente fuente) {
+        SensorRepository repo = (fuente == SensorRepository.Fuente.API) ? apiRepository : firebaseRepository;
         executorService.execute(() -> {
-            repository.Delete(sensor);
+            if (sensor.getFirebaseKey() == null) {
+                sensor.setLocalOnly(true);
+            }
+            repo.Update(sensor);
+        });
+    }
+
+    public void deleteSensor(Sensor sensor, SensorRepository.Fuente fuente) {
+        SensorRepository repo = (fuente == SensorRepository.Fuente.API) ? apiRepository : firebaseRepository;
+        executorService.execute(() -> {
+            repo.Delete(sensor);
         });
     }
 
     // Nuevos métodos para sincronización
     public void syncWithFirebase() {
         executorService.execute(() -> {
-            List<Sensor> localSensors = repository.getAll();
+            List<Sensor> localSensors = firebaseRepository.getAll();
             for (Sensor sensor : localSensors) {
                 if (sensor.isLocalOnly()) {
-                    // Si es un sensor creado offline, sincronizarlo
                     sensor.setLocalOnly(false);
-                    repository.Insert(sensor); // Esto ahora lo subirá a Firebase
+                    firebaseRepository.Insert(sensor);
                 }
             }
         });
     }
 
-    // Método para forzar una actualización desde Firebase
     public void refreshFromFirebase() {
-        executorService.execute(() -> {
-            // Esto activará el listener de Firebase en el Repository
-            // y actualizará automáticamente los datos locales
-        });
+        firebaseRepository.refreshFromFirebase();
     }
-    public void refreshFROMApi(){
-        repository.refreshFromApi();
+
+    public void refreshFromApi() {
+        apiRepository.refreshFromApi();
     }
+
+    public void disconnectFirebase() {
+        firebaseRepository.disconnectFirebase();
+    }
+
+    public void disconnectApi() {
+        apiRepository.disconnectApi();
+    }
+
+    public void fromApiToFirebase() {
+       apiRepository.disconnectApi();
+       firebaseRepository.refreshFromFirebase();
+       setFuente(SensorRepository.Fuente.FIREBASE);
+    }
+
+    public void fromFirebaseToApi() {
+        firebaseRepository.disconnectFirebase();
+
+        apiRepository.refreshFromApi();
+        setFuente(SensorRepository.Fuente.API);
+    }
+
+    public List<Sensor> getAllFromApi() {
+        return apiRepository.getAll();
+    }
+
+    public List<Sensor> getAllFromFirebase() {
+        return firebaseRepository.getAll();
+    }
+
 }
