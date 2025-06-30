@@ -15,12 +15,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.sensorreaders.Models.Sensor;
-import com.example.sensorreaders.Utilities.SensorNotificationHelper;
 import com.example.sensorreaders.ViewModel.SensorViewModel;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -36,45 +34,45 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Fragmento principal para mostrar los datos actuales de los sensores y sus gráficos.
+ */
 public class SensorFragment extends Fragment {
 
+    // Elementos de la interfaz de usuario
     private TextView tvTemperatura, tvHumedad, tvPresion, tvViento, tvLuz, tvLluvia, tvGas, tvHumo, tvHumedadSuelo;
     private TextView tvEstadoConexion, tvFechaActual;
     private View indicadorConexion;
     private Button btnDescargarPDF, btnDescargarExcel, btnRefrescar;
+
+    // ViewModel para acceder a los datos
     private SensorViewModel viewModels;
     private PDFGenerator pdfGenerator;
     private LiveData<List<Sensor>> listaSensores;
-    private int Ubi;
     private Integer lastSensorIdShown = null;
 
     // Gráficos
     private LineChart chartPresion, chartLuz, chartViento;
 
-    // Listas para almacenar datos históricos de los gráficos
+    // Datos para los gráficos
     private ArrayList<Entry> presionEntries = new ArrayList<>();
     private ArrayList<Entry> luzEntries = new ArrayList<>();
     private ArrayList<Entry> vientoEntries = new ArrayList<>();
     private ArrayList<String> timeLabels = new ArrayList<>();
-
-    // Contador para el eje X
     private int dataPointCounter = 0;
-
-    // Límite de puntos en el gráfico
     private static final int MAX_DATA_POINTS = 20;
 
     public SensorFragment() {
-        // Constructor vacío obligatorio
+        // Constructor requerido vacío
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sensor, container, false);
         pdfGenerator = new PDFGenerator(getContext());
 
+        // Inicializar ViewModel y obtener datos
         viewModels = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
-        //listaSensores = viewModels.getSensorList();
         viewModels.fromApiToFirebase();
         listaSensores = viewModels.getSensorList();
 
@@ -84,17 +82,12 @@ public class SensorFragment extends Fragment {
         setupButtons();
         updateCurrentDate();
 
-
-
-
-        //Se cancela la llamada realizada a la api si sigue en curso y se syncroniza con la de firebase
-
-
         return view;
     }
 
+    /** Inicializa las vistas del layout */
     private void initializeViews(View view) {
-        // TextViews de datos
+        // TextViews
         tvTemperatura = view.findViewById(R.id.tvTemperatura);
         tvHumedad = view.findViewById(R.id.tvHumedad);
         tvPresion = view.findViewById(R.id.tvPresion);
@@ -104,8 +97,6 @@ public class SensorFragment extends Fragment {
         tvGas = view.findViewById(R.id.tvGas);
         tvHumo = view.findViewById(R.id.tvHumo);
         tvHumedadSuelo = view.findViewById(R.id.tvHumedadSuelo);
-
-        // TextViews de estado
         tvEstadoConexion = view.findViewById(R.id.tvEstadoConexion);
         tvFechaActual = view.findViewById(R.id.tvFechaActual);
         indicadorConexion = view.findViewById(R.id.indicadorConexion);
@@ -121,14 +112,15 @@ public class SensorFragment extends Fragment {
         chartViento = view.findViewById(R.id.chartViento);
     }
 
+    /** Configura los gráficos */
     private void setupCharts() {
         setupChart(chartPresion, "Presión Atmosférica (hPa)", Color.rgb(76, 175, 80));
         setupChart(chartLuz, "Intensidad Lumínica (lux)", Color.rgb(255, 193, 7));
         setupChart(chartViento, "Velocidad del Viento (km/h)", Color.rgb(33, 150, 243));
     }
 
+    /** Configura un gráfico individual */
     private void setupChart(LineChart chart, String description, int color) {
-        // Configuración general del gráfico
         chart.getDescription().setEnabled(false);
         chart.setTouchEnabled(true);
         chart.setDragEnabled(true);
@@ -137,7 +129,7 @@ public class SensorFragment extends Fragment {
         chart.setDrawGridBackground(false);
         chart.setBackgroundColor(Color.WHITE);
 
-        // Configuración del eje X
+        // Eje X
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setTextColor(Color.GRAY);
@@ -147,37 +139,30 @@ public class SensorFragment extends Fragment {
             @Override
             public String getFormattedValue(float value) {
                 int index = (int) value;
-                if (index >= 0 && index < timeLabels.size()) {
-                    return timeLabels.get(index);
-                }
-                return "";
+                return index >= 0 && index < timeLabels.size() ? timeLabels.get(index) : "";
             }
         });
 
-        // Configuración del eje Y izquierdo
+        // Eje Y izquierdo
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setTextColor(color);
         leftAxis.setDrawGridLines(true);
         leftAxis.setGranularityEnabled(true);
 
-        // Configuración del eje Y derecho
-        YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setEnabled(false);
+        // Eje Y derecho desactivado
+        chart.getAxisRight().setEnabled(false);
 
-        // Configuración de la leyenda
         chart.getLegend().setEnabled(false);
-
-        // Animación
         chart.animateX(1000);
     }
 
+    /** Observa cambios en los sensores y actualiza la UI */
     private void observeData() {
         listaSensores.observe(getActivity(), sensors -> {
             if (sensors != null && !sensors.isEmpty()) {
                 updateConnectionStatus(true);
 
-                int lastIndex = sensors.size() - 1;
-                Sensor lastSensor = sensors.get(lastIndex);
+                Sensor lastSensor = sensors.get(sensors.size() - 1);
 
                 if (lastSensorIdShown == null || !lastSensorIdShown.equals(lastSensor.getId())) {
                     lastSensorIdShown = lastSensor.getId();
@@ -191,9 +176,9 @@ public class SensorFragment extends Fragment {
         });
     }
 
+    /** Actualiza los datos en pantalla */
     private void updateSensorData(Sensor sensor) {
         if (sensor == null) return;
-
         try {
             tvTemperatura.setText(String.format(Locale.getDefault(), "%.1f °C", sensor.getTemperatura()));
             tvHumedad.setText(String.format(Locale.getDefault(), "%.0f%%", sensor.getHumedad()));
@@ -210,27 +195,23 @@ public class SensorFragment extends Fragment {
         }
     }
 
+    /** Actualiza los gráficos */
     private void updateCharts(Sensor sensor) {
         if (sensor == null) return;
-
         try {
-            // Obtener tiempo actual
             String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 
-            // Agregar nuevos datos
             presionEntries.add(new Entry(dataPointCounter, sensor.getPresionAtmosferica().floatValue()));
             luzEntries.add(new Entry(dataPointCounter, sensor.getLuz().floatValue()));
             vientoEntries.add(new Entry(dataPointCounter, sensor.getViento().floatValue()));
             timeLabels.add(currentTime);
 
-            // Limitar el numero de puntos
             if (presionEntries.size() > MAX_DATA_POINTS) {
                 presionEntries.remove(0);
                 luzEntries.remove(0);
                 vientoEntries.remove(0);
                 timeLabels.remove(0);
 
-                // Reajustar índices
                 for (int i = 0; i < presionEntries.size(); i++) {
                     presionEntries.get(i).setX(i);
                     luzEntries.get(i).setX(i);
@@ -240,7 +221,6 @@ public class SensorFragment extends Fragment {
                 dataPointCounter++;
             }
 
-            // Actualizar gráficos
             updateChart(chartPresion, new ArrayList<>(presionEntries), "Presión", Color.rgb(76, 175, 80));
             updateChart(chartLuz, new ArrayList<>(luzEntries), "Luz", Color.rgb(255, 193, 7));
             updateChart(chartViento, new ArrayList<>(vientoEntries), "Viento", Color.rgb(33, 150, 243));
@@ -250,6 +230,7 @@ public class SensorFragment extends Fragment {
         }
     }
 
+    /** Configura y actualiza un gráfico */
     private void updateChart(LineChart chart, ArrayList<Entry> entries, String label, int color) {
         if (entries.isEmpty()) return;
 
@@ -265,11 +246,11 @@ public class SensorFragment extends Fragment {
         dataSet.setFillAlpha(30);
         dataSet.setDrawValues(false);
 
-        LineData lineData = new LineData(dataSet);
-        chart.setData(lineData);
-        chart.invalidate(); // Refresh chart
+        chart.setData(new LineData(dataSet));
+        chart.invalidate();
     }
 
+    /** Limpia los TextViews si no hay datos */
     private void clearSensorData() {
         tvTemperatura.setText("-- °C");
         tvHumedad.setText("--%");
@@ -282,27 +263,22 @@ public class SensorFragment extends Fragment {
         tvHumedadSuelo.setText("--%");
     }
 
+    /** Muestra estado de conexión en pantalla */
     private void updateConnectionStatus(boolean isConnected) {
-        if (isConnected) {
-            tvEstadoConexion.setText("En línea");
-            indicadorConexion.setBackgroundColor(Color.parseColor("#4CAF50")); // Verde
-        } else {
-            tvEstadoConexion.setText("Sin conexión");
-            indicadorConexion.setBackgroundColor(Color.parseColor("#F44336")); // Rojo
-        }
+        tvEstadoConexion.setText(isConnected ? "En línea" : "Sin conexión");
+        indicadorConexion.setBackgroundColor(isConnected ? Color.parseColor("#4CAF50") : Color.parseColor("#F44336"));
     }
 
+    /** Muestra la fecha actual */
     private void updateCurrentDate() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, dd 'de' MMMM", new Locale("es", "ES"));
-        String currentDate = dateFormat.format(new Date());
+        String currentDate = new SimpleDateFormat("EEEE, dd 'de' MMMM", new Locale("es", "ES")).format(new Date());
         tvFechaActual.setText(currentDate);
     }
 
+    /** Configura listeners para los botones */
     private void setupButtons() {
         btnDescargarExcel.setOnClickListener(v -> {
             viewModels.fromFirebaseToApi();
-
-            // Observar una sola vez cuando lleguen los datos de Firebase
             viewModels.getSensorList().observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
                 @Override
                 public void onChanged(List<Sensor> sensors) {
@@ -312,11 +288,7 @@ public class SensorFragment extends Fragment {
                     } else {
                         Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
                     }
-
-                    // Restaurar la fuente original (opcional)
                     viewModels.fromApiToFirebase();
-
-                    // Remueve el observer para que no quede escuchando
                     viewModels.getSensorList().removeObserver(this);
                 }
             });
@@ -324,37 +296,24 @@ public class SensorFragment extends Fragment {
 
         btnDescargarPDF.setOnClickListener(v -> {
             viewModels.fromFirebaseToApi();
-
             viewModels.getSensorList().observe(getViewLifecycleOwner(), new Observer<List<Sensor>>() {
                 @Override
                 public void onChanged(List<Sensor> sensors) {
                     if (sensors != null && !sensors.isEmpty()){
-                        pdfGenerator.generateFromLiveData(viewModels.getSensorList(), "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
-                    }else {
+                        pdfGenerator.generateFromLiveData(viewModels.getSensorList(),
+                                "Reporte_Sensores_Excel_" + System.currentTimeMillis(), getActivity());
+                    } else {
                         Toast.makeText(getContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show();
                     }
-                    // Restaurar la fuente original (opcional)
                     viewModels.fromApiToFirebase();
-
-                    // Remueve el observer para que no quede escuchando
                     viewModels.getSensorList().removeObserver(this);
                 }
             });
-            //Se deja de lado el observe ya que no hay que monitorear los datos que venga de la api y solo se pide una actualizacion de la lista para los datos que tendra el pdf
-
-
-
-
-            viewModels.fromApiToFirebase();
-            listaSensores = viewModels.getSensorList();
-
         });
 
         btnRefrescar.setOnClickListener(v -> {
-
             viewModels.fromApiToFirebase();
             listaSensores = viewModels.getSensorList();
-
             Toast.makeText(getContext(), "Refrescando datos...", Toast.LENGTH_SHORT).show();
         });
     }
@@ -362,19 +321,15 @@ public class SensorFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Limpiar datos de los gráficos
         if (presionEntries != null) presionEntries.clear();
         if (luzEntries != null) luzEntries.clear();
         if (vientoEntries != null) vientoEntries.clear();
         if (timeLabels != null) timeLabels.clear();
-
-
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
+        // Se puede agregar lógica adicional si es necesario al crear la vista
     }
 }
