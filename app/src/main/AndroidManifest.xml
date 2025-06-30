@@ -52,6 +52,12 @@
             android:name=".MainActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <receiver android:name=".Utilities.SensorNotificationHelper$NotificationDismissedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.sensorreaders.NOTIFICATION_DISMISSED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
