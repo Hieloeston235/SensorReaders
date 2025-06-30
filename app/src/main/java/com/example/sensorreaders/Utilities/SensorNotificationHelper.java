@@ -55,6 +55,8 @@ public class SensorNotificationHelper {
 
     // Action para el BroadcastReceiver
     private static final String ACTION_NOTIFICATION_DISMISSED = "com.example.sensorreaders.NOTIFICATION_DISMISSED";
+    // NUEVO PREFS con tiempo
+    private static final String KEY_NOTIFICATION_TIMESTAMP = "notification_timestamps";
 
     // ExecutorService para tareas en segundo plano
     private static ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -202,25 +204,26 @@ public class SensorNotificationHelper {
     // Verificar si existe una notificación activa para el sensor
     private static boolean existeNotificacionActiva(Context context, String tipoSensor) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        Set<String> activeNotifications = prefs.getStringSet(KEY_ACTIVE_NOTIFICATIONS, new HashSet<>());
-        return activeNotifications.contains(tipoSensor);
+        long now = System.currentTimeMillis();
+        long lastTimestamp = prefs.getLong(KEY_NOTIFICATION_TIMESTAMP + "_" + tipoSensor, 0);
+
+        // Si ya hay una notificación reciente (ej. 15 minutos), no mostrarla
+        return (now - lastTimestamp) < 1 * 60 * 1000;
     }
 
     // Marcar notificación como activa
     private static void marcarNotificacionActiva(Context context, String tipoSensor) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        Set<String> activeNotifications = new HashSet<>(prefs.getStringSet(KEY_ACTIVE_NOTIFICATIONS, new HashSet<>()));
-        activeNotifications.add(tipoSensor);
-        prefs.edit().putStringSet(KEY_ACTIVE_NOTIFICATIONS, activeNotifications).apply();
+        prefs.edit()
+                .putLong(KEY_NOTIFICATION_TIMESTAMP + "_" + tipoSensor, System.currentTimeMillis())
+                .apply();
     }
 
     // Remover notificación activa (llamado cuando se descarta)
     public static void removerNotificacionActiva(Context context, String tipoSensor) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        Set<String> activeNotifications = new HashSet<>(prefs.getStringSet(KEY_ACTIVE_NOTIFICATIONS, new HashSet<>()));
-        activeNotifications.remove(tipoSensor);
-        prefs.edit().putStringSet(KEY_ACTIVE_NOTIFICATIONS, activeNotifications).apply();
-
+        prefs.edit().remove(KEY_NOTIFICATION_TIMESTAMP + "_" + tipoSensor).apply();
+        Log.d(TAG, "Timestamp de notificación removido para sensor: " + tipoSensor);
         Log.d(TAG, "Notificación removida para sensor: " + tipoSensor);
     }
 

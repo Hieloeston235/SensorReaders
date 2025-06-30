@@ -7,6 +7,7 @@ import android.util.Log;
 import com.example.sensorreaders.Models.Sensor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SensorAlertChecker {
@@ -214,5 +215,77 @@ public class SensorAlertChecker {
         } else {
             Log.d(TAG, "Humedad dentro del rango normal");
         }
+    }
+    // Agregar estos métodos a tu clase SensorAlertChecker existente
+
+    /**
+     * Verifica si las notificaciones en segundo plano están habilitadas
+     * @param context Contexto de la aplicación
+     * @return true si las notificaciones están habilitadas
+     */
+    public static boolean areBackgroundNotificationsEnabled(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
+        return prefs.getBoolean("background_notifications_enabled", true);
+    }
+
+    /**
+     * Habilita o deshabilita las notificaciones en segundo plano
+     * @param context Contexto de la aplicación
+     * @param enabled true para habilitar, false para deshabilitar
+     */
+    public static void setBackgroundNotificationsEnabled(Context context, boolean enabled) {
+        SharedPreferences prefs = context.getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("background_notifications_enabled", enabled).apply();
+        Log.d(TAG, "Notificaciones en segundo plano " + (enabled ? "habilitadas" : "deshabilitadas"));
+    }
+
+    /**
+     * Versión mejorada del método principal que verifica si las notificaciones están habilitadas
+     * @param context Contexto de la aplicación
+     * @param sensor Objeto con todos los datos del sensor
+     */
+    public static void checkSensorAlertsIfEnabled(Context context, Sensor sensor) {
+        if (!areBackgroundNotificationsEnabled(context)) {
+            Log.d(TAG, "Notificaciones en segundo plano deshabilitadas, saltando verificación");
+            return;
+        }
+
+        // Llamar al método original
+        checkSensorAlerts(context, sensor);
+    }
+
+    /**
+     * Método para verificar múltiples sensores de forma eficiente
+     * @param context Contexto de la aplicación
+     * @param sensors Lista de sensores a verificar
+     */
+    public static void checkMultipleSensorsAlerts(Context context, List<Sensor> sensors) {
+        if (!areBackgroundNotificationsEnabled(context)) {
+            Log.d(TAG, "Notificaciones en segundo plano deshabilitadas");
+            return;
+        }
+
+        if (sensors == null || sensors.isEmpty()) {
+            Log.d(TAG, "No hay sensores para verificar");
+            return;
+        }
+
+        Log.d(TAG, "Verificando alertas para " + sensors.size() + " sensores");
+
+        int alertasEncontradas = 0;
+        for (Sensor sensor : sensors) {
+            try {
+                // Contar alertas antes de verificar
+                Map<String, String> alertasAntes = new HashMap<>();
+
+                checkSensorAlerts(context, sensor);
+                alertasEncontradas++;
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error al verificar sensor: " + e.getMessage(), e);
+            }
+        }
+
+        Log.i(TAG, "Verificación completada. Sensores procesados: " + alertasEncontradas);
     }
 }
