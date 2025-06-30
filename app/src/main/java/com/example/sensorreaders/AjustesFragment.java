@@ -44,7 +44,7 @@ import java.util.List;
 public class AjustesFragment extends Fragment {
 
     private TextView tvNombreUsuario, tvEmailUsuario;
-    private Switch switchNotificaciones, switchActualizacion;
+    private Switch switchNotificaciones;
     private LinearLayout layoutCambiarPassword, layoutEditarPerfil, layoutCerrarSesion, layoutAcercaDe, layoutNotificaciones;
     private FirebaseAuth mAuth;
     private boolean isNotificationDialogOpen = false;
@@ -91,15 +91,12 @@ public class AjustesFragment extends Fragment {
 
         // Switches de configuracion
         switchNotificaciones = view.findViewById(R.id.switchNotificaciones);
-        switchActualizacion = view.findViewById(R.id.switchActualizacion);
+
 
         // Cargar estado guardado de las notificaciones
         SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
         notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
         switchNotificaciones.setChecked(notificationsEnabled);
-
-        // Establecer switch de actualizacion en OFF por defecto
-        switchActualizacion.setChecked(false);
 
         layoutNotificaciones = view.findViewById(R.id.layoutNotificaciones);
 
@@ -188,10 +185,6 @@ public class AjustesFragment extends Fragment {
             }
         });
 
-        switchActualizacion.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            String message = isChecked ? "Actualizacion automática activada" : "Actualizacion automatica desactivada";
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-        });
     }
 
     private void showNotificationSettingsDialog() {
