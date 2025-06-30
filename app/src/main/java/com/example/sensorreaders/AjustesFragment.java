@@ -43,15 +43,15 @@
 
     public class AjustesFragment extends Fragment {
 
-        private TextView tvNombreUsuario, tvEmailUsuario;
-        private Switch switchNotificaciones, switchActualizacion;
-        private LinearLayout layoutCambiarPassword, layoutEditarPerfil, layoutCerrarSesion, layoutAcercaDe, layoutNotificaciones;
-        private FirebaseAuth mAuth;
-        private boolean isNotificationDialogOpen = false;
-        private boolean notificationsEnabled = false;
-        private SensorViewModel viewModel;
-        private LiveData<List<Sensor>> listaSensores;
-        private Integer lastSensorIdShown = null;
+    private TextView tvNombreUsuario, tvEmailUsuario;
+    private Switch switchNotificaciones;
+    private LinearLayout layoutCambiarPassword, layoutEditarPerfil, layoutCerrarSesion, layoutAcercaDe, layoutNotificaciones;
+    private FirebaseAuth mAuth;
+    private boolean isNotificationDialogOpen = false;
+    private boolean notificationsEnabled = false;
+    private SensorViewModel viewModel;
+    private LiveData<List<Sensor>> listaSensores;
+    private Integer lastSensorIdShown = null;
 
         public AjustesFragment() {
             // Required empty public constructor
@@ -89,19 +89,16 @@
             tvNombreUsuario = view.findViewById(R.id.tvNombreUsuario);
             tvEmailUsuario = view.findViewById(R.id.tvEmailUsuario);
 
-            // Switches de configuracion
-            switchNotificaciones = view.findViewById(R.id.switchNotificaciones);
-            switchActualizacion = view.findViewById(R.id.switchActualizacion);
+        // Switches de configuracion
+        switchNotificaciones = view.findViewById(R.id.switchNotificaciones);
 
-            // Cargar estado guardado de las notificaciones
-            SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
-            notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
-            switchNotificaciones.setChecked(notificationsEnabled);
 
-            // Establecer switch de actualizacion en OFF por defecto
-            switchActualizacion.setChecked(false);
+        // Cargar estado guardado de las notificaciones
+        SharedPreferences prefs = getContext().getSharedPreferences("notification_settings", Context.MODE_PRIVATE);
+        notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
+        switchNotificaciones.setChecked(notificationsEnabled);
 
-            layoutNotificaciones = view.findViewById(R.id.layoutNotificaciones);
+        layoutNotificaciones = view.findViewById(R.id.layoutNotificaciones);
 
             // Opciones de cuenta
             layoutCambiarPassword = view.findViewById(R.id.layoutCambiarPassword);
@@ -188,11 +185,7 @@
                 }
             });
 
-            switchActualizacion.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                String message = isChecked ? "Actualizacion automática activada" : "Actualizacion automatica desactivada";
-                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-            });
-        }
+    }
 
         private void showNotificationSettingsDialog() {
             isNotificationDialogOpen = true; // Marcar que el dialogo esta abierto
