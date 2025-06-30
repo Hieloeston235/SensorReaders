@@ -74,13 +74,13 @@
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            // Inflate the layout for this fragment
+
             View view = inflater.inflate(R.layout.fragment_ajustes, container, false);
 
             initViews(view);
             setupUserInfo();
             setupListeners();
-            //setlistSensor();
+
             return view;
         }
 
@@ -275,7 +275,6 @@
             // Listener para el boton cerrar (X) - MANTENER SWITCH ACTIVO
             btnCerrarAlertas.setOnClickListener(v -> {
                 isNotificationDialogOpen = false; // Marcar que el dialogo se cerro
-                // NO cambiar el estado del switch aqui
                 dialog.dismiss();
             });
 
@@ -318,7 +317,6 @@
             // Manejar botón de atras del sistema - MANTENER SWITCH ACTIVO
             dialog.setOnCancelListener(dialogInterface -> {
                 isNotificationDialogOpen = false; // Marcar que el dialogo se cerro
-                // NO cambiar el estado del switch aqui
             });
 
             // Manejar cuando se cierre el dialogo por cualquier motivo
@@ -341,8 +339,8 @@
             tempMax.setProgress(prefs.getInt("temp_max", 35));
             humedadMin.setProgress(prefs.getInt("humedad_min", 30));
             humedadMax.setProgress(prefs.getInt("humedad_max", 80));
-            presionMin.setProgress(prefs.getInt("presion_min", 503)); // 980 hPa
-            presionMax.setProgress(prefs.getInt("presion_max", 523)); // 1030 hPa
+            presionMin.setProgress(prefs.getInt("presion_min", 503));
+            presionMax.setProgress(prefs.getInt("presion_max", 523));
             vientoMax.setProgress(prefs.getInt("viento_max", 25));
             luzMin.setProgress(prefs.getInt("luz_min", 100));
             luzMax.setProgress(prefs.getInt("luz_max", 800));
@@ -366,8 +364,8 @@
             editor.putInt("temp_max", tempMax);
             editor.putInt("humedad_min", humedadMin);
             editor.putInt("humedad_max", humedadMax);
-            editor.putInt("presion_min", presionMin - 500); // Guardar sin offset
-            editor.putInt("presion_max", presionMax - 500); // Guardar sin offset
+            editor.putInt("presion_min", presionMin - 500);
+            editor.putInt("presion_max", presionMax - 500);
             editor.putInt("viento_max", vientoMax);
             editor.putInt("luz_min", luzMin);
             editor.putInt("luz_max", luzMax);
@@ -397,12 +395,12 @@
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    // No se necesita implementacion especifica
+
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    // No se necesita implementacion especifica
+
                 }
             });
         }
@@ -777,7 +775,7 @@
             builder.create().show();
         }
 
-        // En el lugar donde recibes datos del sensor (ej: Firebase, API, etc.)
+        // En el lugar donde recibes datos del sensor
         public void onSensorDataReceived(double temp, double humedad, double presion, double viento,
                                          double luz, double lluvia, double gas, double humo, double humedadSuelo, long fecha) {
 
@@ -788,6 +786,7 @@
             // Verificar alertas
             SensorAlertChecker.checkSensorAlerts(getContext(), sensor);
         }
+        //Version Beta de la notificaciones
         public void setlistSensor(){
             viewModel = new SensorViewModel(getActivity().getApplication());
             listaSensores = viewModel.getSensorList();
@@ -818,7 +817,7 @@
                         return;
                     }
 
-                    // CLAVE: Solo procesar si hay un nuevo sensor
+
                     // Verificar si ya procesamos este sensor
                     if (lastSensorIdShown != null && lastIndex <= lastSensorIdShown) {
                         // Ya procesamos este sensor o uno más reciente, no hacer nada
@@ -831,9 +830,7 @@
                     // Obtener el sensor más reciente
                     Sensor latestSensor = sensors.get(lastIndex);
 
-                    // Verificación adicional: asegurar que es realmente un sensor nuevo
-                    // Puedes agregar más validaciones aquí según tu lógica de negocio
-                    // Por ejemplo, verificar timestamp para evitar procesar datos antiguos
+
 
                     // Llamar al método con los datos del sensor SOLO para sensores nuevos
                     onSensorDataReceived(

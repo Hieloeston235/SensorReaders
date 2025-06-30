@@ -5,13 +5,11 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,8 +29,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * Fragmento encargado de mostrar el historial de sensores.
+ * Permite aplicar filtros por fechas, visualizar resultados y exportarlos en PDF o Excel.
+ */
 public class HistorialFragment extends Fragment {
-
     private Button btnHoy, btnAyer, btn7Dias, btnAplicarFiltro, btnFechaInicio, btnFechaFin, btnDescargarPDF, btnDescargarExcel;
     private RecyclerView recyclerViewHistorial;
     private LinearLayout layoutNoData;
@@ -47,8 +48,7 @@ public class HistorialFragment extends Fragment {
     public HistorialFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_historial, container, false);
     }
 
@@ -56,21 +56,20 @@ public class HistorialFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializar vistas
+        // Inicializa referencias a elementos del layout
         initViews(view);
 
-        // Configurar formato de fecha
+        // Inicializa formato de fecha
         dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-        // Configurar ViewModel y RecyclerView
+        // Configura ViewModel y RecyclerView
         setupViewModelAndRecyclerView();
 
-        // Configurar listeners
+        // Configura listeners de botones
         setupClickListeners();
 
-        // Cargar datos iniciales (últimos 7 días por defecto)
+        // Aplica el filtro por defecto de los últimos 7 días
         setFiltro7Dias();
-
     }
 
     private void initViews(View view) {
@@ -86,8 +85,9 @@ public class HistorialFragment extends Fragment {
         layoutNoData = view.findViewById(R.id.layoutNoData);
         tvContadorRegistros = view.findViewById(R.id.tvContadorRegistros);
     }
-    private void RefreshConection(){
-        //Se cancela la syncronizacion la base de firebase y se syncroniza con la base que esta en la API
+
+    private void RefreshConection() {
+        // Cambia la fuente de datos a la API en lugar de Firebase
         viewModel.fromFirebaseToApi();
     }
 
@@ -95,20 +95,19 @@ public class HistorialFragment extends Fragment {
         pdfGenerator = new PDFGenerator(getContext());
         viewModel = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
 
-
         recyclerViewHistorial.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SensorAdapter();
         recyclerViewHistorial.setAdapter(adapter);
-        //Se carga los datos de la api
+
+        // Actualiza la fuente de datos desde la API
         RefreshConection();
 
-        viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> {
-            aplicarFiltroYMostrar(sensores);
-        });
+        // Observa la lista de sensores y aplica filtro automáticamente cuando llegan datos
+        viewModel.getSensorList().observe(getViewLifecycleOwner(), sensores -> aplicarFiltroYMostrar(sensores));
     }
 
     private void setupClickListeners() {
-        // Botones de filtro rápido
+        // Filtros rápidos
         btnHoy.setOnClickListener(v -> {
             setFiltroHoy();
             resetearSeleccionBotones();
@@ -127,7 +126,7 @@ public class HistorialFragment extends Fragment {
             btn7Dias.setSelected(true);
         });
 
-        // Selectores de fecha
+        // Selección de fechas
         btnFechaInicio.setOnClickListener(v -> mostrarDatePicker(true));
         btnFechaFin.setOnClickListener(v -> mostrarDatePicker(false));
 
@@ -146,7 +145,7 @@ public class HistorialFragment extends Fragment {
             }
         });
 
-        // Botones de descarga
+        // Exportar como PDF
         btnDescargarPDF.setOnClickListener(v -> {
             if (datosFiltrados != null && !datosFiltrados.isEmpty()) {
                 pdfGenerator.generateFromList(datosFiltrados, "Historial_PDF_" + System.currentTimeMillis(), getActivity());
@@ -156,6 +155,7 @@ public class HistorialFragment extends Fragment {
             }
         });
 
+        // Exportar como Excel
         btnDescargarExcel.setOnClickListener(v -> {
             if (datosFiltrados != null && !datosFiltrados.isEmpty()) {
                 pdfGenerator.generateExcelFromList(datosFiltrados, "Historial_Excel_" + System.currentTimeMillis(), getActivity());
@@ -166,10 +166,12 @@ public class HistorialFragment extends Fragment {
         });
     }
 
+    /**
+     * Muestra un selector de fecha y actualiza los botones con la selección.
+     */
     private void mostrarDatePicker(boolean esFechaInicio) {
         Calendar calendar = Calendar.getInstance();
 
-        // Si ya hay una fecha seleccionada, usar esa como punto de partida
         if (esFechaInicio && fechaInicio != null) {
             calendar.setTime(fechaInicio);
         } else if (!esFechaInicio && fechaFin != null) {
@@ -195,12 +197,11 @@ public class HistorialFragment extends Fragment {
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
 
-        // Configurar límites del DatePicker
         datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-
         datePickerDialog.show();
     }
 
+    // Aplica filtro para hoy
     private void setFiltroHoy() {
         Calendar cal = Calendar.getInstance();
         fechaInicio = inicioDelDia(cal.getTime());
@@ -209,6 +210,7 @@ public class HistorialFragment extends Fragment {
         actualizarTextoFechas();
     }
 
+    // Aplica filtro para ayer
     private void setFiltroAyer() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, -1);
@@ -218,6 +220,7 @@ public class HistorialFragment extends Fragment {
         actualizarTextoFechas();
     }
 
+    // Aplica filtro para los últimos 7 días
     private void setFiltro7Dias() {
         Calendar calInicio = Calendar.getInstance();
         calInicio.add(Calendar.DAY_OF_YEAR, -6);
@@ -242,6 +245,9 @@ public class HistorialFragment extends Fragment {
         btn7Dias.setSelected(false);
     }
 
+    /**
+     * Filtra la lista de sensores por fecha y actualiza la interfaz.
+     */
     private void aplicarFiltroYMostrar(List<Sensor> lista) {
         if (lista == null || lista.isEmpty()) {
             recyclerViewHistorial.setVisibility(View.GONE);
@@ -267,16 +273,18 @@ public class HistorialFragment extends Fragment {
         if (datosFiltrados.isEmpty()) {
             recyclerViewHistorial.setVisibility(View.GONE);
             layoutNoData.setVisibility(View.VISIBLE);
-            actualizarContadorRegistros(0);
         } else {
             recyclerViewHistorial.setVisibility(View.VISIBLE);
             layoutNoData.setVisibility(View.GONE);
             adapter.setSensorList(datosFiltrados);
-            actualizarContadorRegistros(datosFiltrados.size());
         }
+
+        actualizarContadorRegistros(datosFiltrados.size());
     }
 
-    // Metodo para actualizar el contador de registros
+    /**
+     * Muestra cuántos registros están siendo visualizados.
+     */
     private void actualizarContadorRegistros(int cantidad) {
         if (tvContadorRegistros != null) {
             String texto = cantidad == 1 ? cantidad + " registro" : cantidad + " registros";
